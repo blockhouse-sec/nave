@@ -1,0 +1,64 @@
+[workspace]
+
+members = [
+    "acir_checker",
+    "nave_cli",
+]
+resolver = "2"
+
+[workspace.package]
+# x-release-please-start-version
+version = "1.0.0-beta.9"
+# x-release-please-end
+authors = ["The TBTL Team <team@noir-lang.org>"]
+edition = "2024"
+rust-version = "1.85.0"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/noir-lang/noir/"
+
+[workspace.lints.rust]
+trivial_casts = "warn"
+trivial_numeric_casts = "warn"
+unused_import_braces = "warn"
+unused_qualifications = "warn"
+unreachable_pub = "warn"
+unsafe_code = "deny"
+unused_must_use = "warn"
+
+[workspace.lints.clippy]
+semicolon_if_nothing_returned = "warn"
+result_large_err = "allow"
+uninlined_format_args = "warn"
+
+[workspace.dependencies]
+
+acir_checker = { path = "acir_checker" }
+
+[profile.dev]
+# This is required to be able to run `cargo test` in acvm_js due to the `locals exceeds maximum` error.
+# See https://ritik-mishra.medium.com/resolving-the-wasm-pack-error-locals-exceed-maximum-ec3a9d96685b
+opt-level = 1
+
+# release mode with extra checks, e.g. overflow checks
+[profile.release-pedantic]
+inherits = "release"
+overflow-checks = true
+
+[profile.test]
+inherits = "dev"
+overflow-checks = true
+
+[profile.size]
+inherits = "release"
+lto = true
+opt-level = "z"
+
+[profile.size-aggressive]
+inherits = "release"
+strip = true
+lto = true
+panic = "abort"
+opt-level = "z"
+
+[profile.bench]
+lto = true

@@ -1,0 +1,35 @@
+{
+  "results": [
+    {
+      "command": "timeout 60 /Users/pedroantonino/Repos/noir/tooling/acir_checker/benches/../../../target/debug/nargo formal-verify",
+      "mean": 0.18361545156,
+      "stddev": 0.002689187041055214,
+      "median": 0.18380010996,
+      "user": 0.17106222,
+      "system": 0.029358079999999998,
+      "min": 0.17963910996000002,
+      "max": 0.18621390096,
+      "times": [
+        0.18380010996,
+        0.18588802696,
+        0.17963910996000002,
+        0.18621390096,
+        0.18253610996
+      ],
+      "memory_usage_byte": [
+        81985536,
+        81985536,
+        81985536,
+        81985536,
+        81985536
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  ]
+}

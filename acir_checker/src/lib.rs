@@ -1,0 +1,136 @@
+// Function for running the verifier for ACIR
+
+use crate::{
+    encoder::Translator,
+    smt::{Bool, SolverOutput, Value},
+};
+use acir::{FieldElement, circuit::Circuit, native_types::WitnessMap};
+use std::collections::HashMap;
+
+pub use crate::error::Error;
+pub use crate::smt::Solver;
+
+mod encoder;
+mod error;
+mod smt;
+
+const _: () = {
+    // Ensure that exactly one of the features is selected.
+    #[cfg(all(feature = "bn254", not(feature = "bls12_381")))]
+    compile_error!("feature \"bn254\" requires feature \"bls12_381\" to be disabled");
+};
+
+pub const PRIME: &str =
+    "21888242871839275222246405745257275088548364400416034343698204186575808495617";
+
+type Model = HashMap<String, Value>;
+
+#[derive(Debug, Clone)]
+pub enum Output {
+    Falsified(Model),
+    Verified,
+    Unknown,
+}
+
+impl Output {
+    pub fn is_verified(&self) -> bool {
+        matches!(self, Output::Verified)
+    }
+    pub fn is_falsified(&self) -> bool {
+        matches!(self, Output::Falsified(_))
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+pub enum BackendType {
+    FfGb,
+    FfSplit,
+    Int,
+}
+
+impl Default for BackendType {
+    fn default() -> Self {
+        BackendType::FfGb
+    }
+}
+
+// The second item of the tuple identifies brillig call opcode location of
+// verification condition
+type VerifyOutput = (Output, usize);
+
+fn create_solver(backend: BackendType) -> Solver {
+    match backend {
+        BackendType::FfGb => Solver::new_ff_gb(PRIME),
+        BackendType::FfSplit => Solver::new_ff_split(PRIME),
+        BackendType::Int => Solver::new_int(PRIME),
+    }
+}
+
+fn use_int(backend: BackendType) -> bool {
+    match backend {
+        BackendType::FfGb | BackendType::FfSplit => false,
+        BackendType::Int => true,
+    }
+}
+
+fn get_output(solver: &mut Solver, solver_output: SolverOutput) -> Output {
+    match solver_output {
+        SolverOutput::Sat => Output::Falsified(solver.get_model()),
+        SolverOutput::Unsat => Output::Verified,
+        SolverOutput::Unknown => Output::Unknown,
+    }
+}
+
+pub fn check_program(
+    circuit: &Circuit<FieldElement>,
+    brillig_names: Vec<String>,
+    backend: BackendType,
+    strict: bool,
+) -> Result<Vec<VerifyOutput>, Error> {
+    let mut solver = create_solver(backend);
+    let mut brillig_funcs: HashMap<u32, String> = HashMap::new();
+    for (fn_index, name) in brillig_names.clone().into_iter().enumerate() {
+        brillig_funcs.insert(fn_index as u32, name);
+    }
+    let ver_conds = {
+        let use_int = use_int(backend);
+        let mut translator =
+            Translator::new(&mut solver, brillig_funcs, circuit.num_vars(), use_int, strict);
+        translator.translate_to_smt(circuit)?;
+        translator.ver_conds()
+    };
+    let mut outputs = Vec::new();
+    for (actlit_name, call_loc) in ver_conds {
+        let out_sat = solver.check_sat_assuming(&actlit_name).unwrap();
+        let output = get_output(&mut solver, out_sat);
+        if let Output::Verified = output {
+            solver.assert(Bool::new_const(&actlit_name).neg());
+        }
+        outputs.push((output, call_loc));
+    }
+    Ok(outputs)
+}
+
+pub fn check_execution(
+    witness_map: WitnessMap<FieldElement>,
+    circuit: &Circuit<FieldElement>,
+    backend: BackendType,
+    strict: bool,
+    solver_options: &Vec<(String, String)>,
+) -> Result<Output, Error> {
+    let mut solver = create_solver(backend);
+    for (key, value) in solver_options {
+        solver.set_option(key, value);
+    }
+
+    let brillig_funcs: HashMap<u32, String> = HashMap::new();
+    let use_int = use_int(backend);
+    let mut translator =
+        Translator::new(&mut solver, brillig_funcs, circuit.num_vars(), use_int, strict);
+    translator.translate_to_smt(circuit)?;
+    translator.translate_witness_map(witness_map)?;
+
+    let out_sat = solver.check_sat().map_err(|e| Error::SmtSolvingError(e.to_string()))?;
+    let output = get_output(&mut solver, out_sat);
+    Ok(output)
+}

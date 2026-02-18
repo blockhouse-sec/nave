@@ -1,0 +1,63 @@
+[package]
+name = "nave_cli"
+description = "NAVe: Nargo program formal verifier"
+default-run = "nave"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[lints]
+workspace = true
+
+# Rename binary from `nave_cli` to `nave`
+[[bin]]
+name = "nave"
+path = "src/main.rs"
+doc = false # Avoid conflicts with the `nave` library when documenting. We just want to document the `nave` library.
+
+[build-dependencies]
+build-data = "^0.3.3"
+
+[dependencies]
+clap = { version = "4.3.19", features = ["derive", "env"] }
+fm = { git = "https://github.com/pedrotbtl/noir-pub.git", branch = "nave"}
+nargo = { git = "https://github.com/pedrotbtl/noir-pub.git", branch = "nave", features = ["rpc"] }
+nargo_cli = { git = "https://github.com/pedrotbtl/noir-pub.git", branch = "nave"}
+# nargo_expand.workspace = true
+# nargo_fmt.workspace = true
+nargo_toml = { git = "https://github.com/pedrotbtl/noir-pub.git", branch = "nave"}
+# noir_lsp.workspace = true
+noir_artifact_cli = {git = "https://github.com/pedrotbtl/noir-pub.git", branch = "nave" }
+# noir_debugger = { git = "https://github.com/pedrotbtl/noir-pub.git", branch = "nave" }
+# noirc_evaluator.workspace = true
+noirc_driver = { git = "https://github.com/pedrotbtl/noir-pub.git", branch = "nave", features = ["bn254"] }
+noirc_frontend = { git = "https://github.com/pedrotbtl/noir-pub.git", branch = "nave", features = ["bn254"] }
+noirc_abi = { git = "https://github.com/pedrotbtl/noir-pub.git", branch = "nave"}
+noirc_errors = { git = "https://github.com/pedrotbtl/noir-pub.git", branch = "nave"}
+# noirc_artifacts = { git = "https://github.com/pedrotbtl/noir-pub.git", branch = "nave"}
+# noirc_artifacts_info = { git = "https://github.com/pedrotbtl/noir-pub.git", branch = "nave"}
+# noir_ast_fuzzer.workspace = true
+acvm = { git = "https://github.com/pedrotbtl/noir-pub.git", branch = "nave", features = ["bn254"] }
+acir_checker.workspace = true
+thiserror = "1.0.21"
+const_format = "0.2.30"
+termcolor = "1.1.2"
+color-eyre = "0.6.2"
+clap-markdown = { git = "https://github.com/noir-lang/clap-markdown", rev = "450d759532c88f0dba70891ceecdbc9ff8f25d2b", optional = true }
+
+# Logs
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter", "json"] }
+tracing-appender = "0.2.3"
+fs2 = "0.4.3"
+
+[target.'cfg(not(unix))'.dependencies]
+tokio-util = { version = "0.7.8", features = ["compat"] }
+
+[dev-dependencies]
+
+
+[features]
+codegen-docs = ["dep:clap-markdown"]

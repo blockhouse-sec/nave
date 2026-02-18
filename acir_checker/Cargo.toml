@@ -1,0 +1,45 @@
+[package]
+name = "acir_checker"
+description = "The formal verifier that processes ACIR given a backend/proof system."
+# x-release-please-start-version
+version = "1.0.0-beta.9"
+# x-release-please-end
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+build = "build/main.rs"
+
+[lints]
+workspace = true
+
+[dependencies]
+acir = { git = "https://github.com/pedrotbtl/noir-pub.git", branch = "nave" }
+rsmt2 = { git = "https://github.com/pedrotbtl/rsmt2.git"}
+itertools = "0.14.0"
+anyhow = { version = "1.0", default-features = false }
+num-bigint = "0.4"
+
+[features]
+bn254 = ["acir/bn254"]
+bls12_381 = [
+    "acir/bls12_381",
+]
+
+[dev-dependencies]
+noirc_driver = { git = "https://github.com/pedrotbtl/noir-pub.git", branch = "nave" }
+noirc_frontend = { git = "https://github.com/pedrotbtl/noir-pub.git", branch = "nave" }
+# noirc_frontend.workspace = true
+nargo_cli = { git = "https://github.com/pedrotbtl/noir-pub.git", branch = "nave" }
+# nargo_cli.workspace = true
+noir_artifact_cli = { git = "https://github.com/pedrotbtl/noir-pub.git", branch = "nave" }
+# noir_artifact_cli.workspace = true
+nargo_toml = { git = "https://github.com/pedrotbtl/noir-pub.git", branch = "nave" }
+# nargo_toml.workspace = true
+nargo = { git = "https://github.com/pedrotbtl/noir-pub.git", branch = "nave" }
+# nargo.workspace = true
+tokio = { version = "1", features = ["macros"] }
+
+[lib]
+# See https://bheisler.github.io/criterion.rs/book/faq.html#cargo-bench-gives-unrecognized-option-errors-for-valid-command-line-options
+bench = false

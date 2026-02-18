@@ -1,0 +1,606 @@
+
+running 318 tests
+test test_execute_success_a_7 ... ok
+Execution check for package a_1327_concrete_in_generic: true
+test test_execute_success_a_1327_concrete_in_generic ... ok
+test test_execute_success_a_6 ... ok
+test test_execute_success_aes128_encrypt ... ok
+Execution check for package array_dedup_regression: true
+test test_execute_success_array_dedup_regression ... ok
+test test_execute_success_array_dynamic_nested_blackbox_input ... ok
+test test_execute_success_array_dynamic_blackbox_input ... ok
+Execution check for package array_eq: true
+test test_execute_success_array_eq ... ok
+Execution check for package a_6_array: false
+test test_execute_success_a_6_array ... ok
+Execution check for package array_neq: true
+test test_execute_success_array_neq ... ok
+Execution check for package array_dynamic: false
+test test_execute_success_array_dynamic ... ok
+Execution check for package array_oob_regression_7975: true
+test test_execute_success_array_oob_regression_7975 ... ok
+Execution check for package a_3_add: false
+test test_execute_success_a_3_add ... ok
+Execution check for package array_rc_regression_7842: true
+test test_execute_success_array_rc_regression_7842 ... ok
+Execution check for package a_1_mul: false
+test test_execute_success_a_1_mul ... ok
+Execution check for package array_to_slice_constant_length: true
+test test_execute_success_array_to_slice_constant_length ... ok
+Execution check for package a_2_div: false
+test test_execute_success_a_2_div ... ok
+Execution check for package array_with_refs_from_param: true
+test test_execute_success_array_with_refs_from_param ... ok
+Execution check for package array_with_refs_return: true
+test test_execute_success_array_with_refs_return ... ok
+Execution check for package as_witness: true
+test test_execute_success_as_witness ... ok
+Execution check for package a_7_function: false
+test test_execute_success_a_7_function ... ok
+Execution check for package assert: true
+test test_execute_success_assert ... ok
+Execution check for package assert_statement: true
+test test_execute_success_assert_statement ... ok
+Execution check for package assign_ex: true
+test test_execute_success_assign_ex ... ok
+test test_execute_success_basic ... ok
+Execution check for package array_if_cond_simple: false
+test test_execute_success_array_if_cond_simple ... ok
+test test_execute_success_binary_operator_overloading ... ok
+test test_execute_success_bench_ecdsa_secp256k1 ... ok
+test test_execute_success_bench_2_to_17 ... ok
+test test_execute_success_bit_and ... ok
+Execution check for package bit_not: true
+test test_execute_success_bit_not ... ok
+Execution check for package a_5_over: false
+test test_execute_success_a_5_over ... ok
+Execution check for package array_len: false
+test test_execute_success_array_len ... ok
+test test_execute_success_blake3 ... ok
+Execution check for package a_4_sub: false
+test test_execute_success_a_4_sub ... ok
+Execution check for package bool_not: true
+test test_execute_success_bool_not ... ok
+Execution check for package bool_or: true
+test test_execute_success_bool_or ... ok
+Execution check for package break_and_continue: true
+test test_execute_success_break_and_continue ... ok
+Execution check for package bit_shifts_runtime: false
+test test_execute_success_bit_shifts_runtime ... ok
+Execution check for package brillig_arrays: true
+test test_execute_success_brillig_arrays ... ok
+Execution check for package brillig_block_parameter_liveness: true
+test test_execute_success_brillig_block_parameter_liveness ... ok
+Execution check for package brillig_conditional: true
+test test_execute_success_brillig_conditional ... ok
+Execution check for package arithmetic_binary_operations: false
+test test_execute_success_arithmetic_binary_operations ... ok
+Execution check for package brillig_constant_reference_regression: true
+test test_execute_success_brillig_constant_reference_regression ... ok
+Execution check for package brillig_cow: true
+test test_execute_success_brillig_cow ... ok
+Execution check for package brillig_cow_assign: true
+test test_execute_success_brillig_cow_assign ... ok
+Execution check for package brillig_cow_regression: true
+test test_execute_success_brillig_cow_regression ... ok
+Execution check for package brillig_entry_points_regression_8069: true
+test test_execute_success_brillig_entry_points_regression_8069 ... ok
+Execution check for package brillig_identity_function: true
+test test_execute_success_brillig_identity_function ... ok
+Execution check for package brillig_loop_size_regression: true
+test test_execute_success_brillig_loop_size_regression ... ok
+Execution check for package array_oob_regression_7965: false
+test test_execute_success_array_oob_regression_7965 ... ok
+Execution check for package brillig_not: true
+test test_execute_success_brillig_not ... ok
+Execution check for package brillig_pedersen: true
+test test_execute_success_brillig_pedersen ... ok
+Execution check for package array_dynamic_main_output: false
+test test_execute_success_array_dynamic_main_output ... ok
+Execution check for package brillig_rc_regression_6123: true
+test test_execute_success_brillig_rc_regression_6123 ... ok
+Execution check for package array_to_slice: false
+test test_execute_success_array_to_slice ... ok
+Execution check for package cast_bool: true
+test test_execute_success_cast_bool ... ok
+Execution check for package array_sort: false
+test test_execute_success_array_sort ... ok
+Execution check for package brillig_calls_array: false
+test test_execute_success_brillig_calls_array ... ok
+Execution check for package brillig_calls_conditionals: false
+test test_execute_success_brillig_calls_conditionals ... ok
+Execution check for package bit_shifts_comptime: false
+test test_execute_success_bit_shifts_comptime ... ok
+Execution check for package brillig_acir_as_brillig: false
+test test_execute_success_brillig_acir_as_brillig ... ok
+Execution check for package brillig_calls: false
+test test_execute_success_brillig_calls ... ok
+Execution check for package brillig_blake2s: false
+test test_execute_success_brillig_blake2s ... ok
+Execution check for package closures_mut_ref: true
+test test_execute_success_closures_mut_ref ... ok
+hello from compile-time!
+quote {
+    struct Foo {
+        fn foo() {
+            // Some comment
+            [[1, 2, 3]]
+        }
+    }
+    
+}
+Execution check for package comptime_println: true
+test test_execute_success_comptime_println ... ok
+Execution check for package comptime_variable_at_runtime: true
+test test_execute_success_comptime_variable_at_runtime ... ok
+test test_execute_success_conditional_1 ... ok
+Execution check for package conditional_regression_547: true
+Execution check for package cast_to_u128: true
+test test_execute_success_conditional_regression_547 ... ok
+test test_execute_success_cast_to_u128 ... ok
+test test_execute_success_conditional_regression_short_circuit ... ok
+Execution check for package brillig_nested_arrays: false
+test test_execute_success_brillig_nested_arrays ... ok
+Execution check for package custom_entry: true
+test test_execute_success_custom_entry ... ok
+test test_execute_success_databus ... ok
+test test_execute_success_databus_composite_calldata ... ok
+Execution check for package brillig_recursion: false
+test test_execute_success_brillig_recursion ... ok
+test test_execute_success_databus_two_calldata ... ok
+test test_execute_success_databus_two_calldata_simple ... ok
+Execution check for package debug_logs: true
+test test_execute_success_debug_logs ... ok
+Execution check for package derive: true
+test test_execute_success_derive ... ok
+Execution check for package diamond_deps_0: true
+test test_execute_success_diamond_deps_0 ... ok
+Execution check for package dont_deduplicate_call: true
+test test_execute_success_dont_deduplicate_call ... ok
+Execution check for package double_neg_cond_bool_input: true
+test test_execute_success_double_neg_cond_bool_input ... ok
+Execution check for package double_neg_cond_global_var: true
+test test_execute_success_double_neg_cond_global_var ... ok
+test test_execute_success_ecdsa_secp256k1 ... ok
+Execution check for package brillig_uninitialized_arrays: false
+test test_execute_success_brillig_uninitialized_arrays ... ok
+test test_execute_success_ecdsa_secp256k1_invalid_pub_key_in_inactive_branch ... ok
+test test_execute_success_ecdsa_secp256r1 ... ok
+test test_execute_success_ecdsa_secp256r1_3x ... ok
+test test_execute_success_ecdsa_secp256r1_invalid_pub_key_in_inactive_branch ... ok
+test test_execute_success_embedded_curve_ops ... ok
+Execution check for package empty_strings_in_composite_arrays: true
+test test_execute_success_empty_strings_in_composite_arrays ... ok
+Execution check for package fmtstr_with_global: true
+test test_execute_success_fmtstr_with_global ... ok
+test test_execute_success_fold_2_to_17 ... ok
+test test_execute_success_fold_after_inlined_calls ... ok
+test test_execute_success_fold_basic ... ok
+test test_execute_success_fold_basic_nested_call ... ok
+test test_execute_success_fold_call_witness_condition ... ok
+test test_execute_success_fold_complex_outputs ... ok
+test test_execute_success_fold_distinct_return ... ok
+test test_execute_success_fold_fibonacci ... ok
+Execution check for package brillig_fns_as_values: false
+test test_execute_success_brillig_fns_as_values ... ok
+test test_execute_success_fold_numeric_generic_poseidon ... ok
+Execution check for package function_ref: true
+test test_execute_success_function_ref ... ok
+Execution check for package generics: true
+test test_execute_success_generics ... ok
+Execution check for package global_array_rc_regression_8259: true
+test test_execute_success_global_array_rc_regression_8259 ... ok
+Execution check for package global_slice_rc_regression_8259: true
+test test_execute_success_global_slice_rc_regression_8259 ... ok
+Execution check for package global_var_entry_point_used_in_another_entry: true
+test test_execute_success_global_var_entry_point_used_in_another_entry ... ok
+Execution check for package conditional_regression_underflow: true
+test test_execute_success_conditional_regression_underflow ... ok
+Execution check for package global_var_func_with_multiple_entry_points: true
+test test_execute_success_global_var_func_with_multiple_entry_points ... ok
+Execution check for package global_var_multiple_entry_points_nested: true
+test test_execute_success_global_var_multiple_entry_points_nested ... ok
+Execution check for package global_consts: true
+test test_execute_success_global_consts ... ok
+Execution check for package global_var_regression_entry_points: true
+test test_execute_success_global_var_regression_entry_points ... ok
+Execution check for package higher_order_functions: true
+test test_execute_success_higher_order_functions ... ok
+test test_execute_success_hashmap ... ok
+Execution check for package cast_signed_to_u1: false
+test test_execute_success_cast_signed_to_u1 ... ok
+Execution check for package import: true
+test test_execute_success_import ... ok
+Execution check for package inline_decompose_hint_brillig_call: true
+test test_execute_success_inline_decompose_hint_brillig_call ... ok
+Execution check for package inline_never_basic: true
+test test_execute_success_inline_never_basic ... ok
+Execution check for package encrypted_log_regression: true
+test test_execute_success_encrypted_log_regression ... ok
+Execution check for package cast_to_i8_regression_7776: false
+test test_execute_success_cast_to_i8_regression_7776 ... ok
+Execution check for package conditional_regression_421: false
+test test_execute_success_conditional_regression_421 ... ok
+Execution check for package lambda_from_global_array: true
+test test_execute_success_lambda_from_global_array ... ok
+Execution check for package lambda_from_global_tuple: true
+test test_execute_success_lambda_from_global_tuple ... ok
+Execution check for package cast_to_u64_regression_7776: false
+test test_execute_success_cast_to_u64_regression_7776 ... ok
+Execution check for package lambda_taking_lambda_regression_8543: true
+test test_execute_success_lambda_taking_lambda_regression_8543 ... ok
+Execution check for package lambda_taking_lambda_with_variant: true
+test test_execute_success_lambda_taking_lambda_with_variant ... ok
+Execution check for package last_uses_regression_8935: true
+test test_execute_success_last_uses_regression_8935 ... ok
+Execution check for package loop: true
+test test_execute_success_loop ... ok
+Execution check for package loop_break_regression_8319: true
+test test_execute_success_loop_break_regression_8319 ... ok
+Execution check for package loop_invariant_nested_deep: true
+test test_execute_success_loop_invariant_nested_deep ... ok
+Execution check for package loop_invariant_regression_8586: true
+test test_execute_success_loop_invariant_regression_8586 ... ok
+Execution check for package loop_small_break: true
+test test_execute_success_loop_small_break ... ok
+Execution check for package main_bool_arg: true
+test test_execute_success_main_bool_arg ... ok
+Execution check for package main_return: true
+test test_execute_success_main_return ... ok
+Execution check for package cast_to_u8_regression_7776: false
+test test_execute_success_cast_to_u8_regression_7776 ... ok
+test test_execute_success_merkle_insert ... ok
+Execution check for package missing_closure_env: true
+test test_execute_success_missing_closure_env ... ok
+Execution check for package modules: true
+test test_execute_success_modules ... ok
+Execution check for package modules_more: true
+test test_execute_success_modules_more ... ok
+Execution check for package modulus: true
+test test_execute_success_modulus ... ok
+Execution check for package multi_scalar_mul: true
+test test_execute_success_multi_scalar_mul ... ok
+Execution check for package mutate_array_copy: true
+test test_execute_success_mutate_array_copy ... ok
+Execution check for package negated_jmpif_condition: true
+test test_execute_success_negated_jmpif_condition ... ok
+Execution check for package conditional_2: false
+test test_execute_success_conditional_2 ... ok
+Execution check for package field_attribute: false
+test test_execute_success_field_attribute ... ok
+Execution check for package nested_array_with_refs: true
+test test_execute_success_nested_array_with_refs ... ok
+Execution check for package nested_array_with_refs_from_param: true
+test test_execute_success_nested_array_with_refs_from_param ... ok
+Execution check for package nested_array_with_refs_return: true
+test test_execute_success_nested_array_with_refs_return ... ok
+Execution check for package nested_array_in_slice: false
+test test_execute_success_nested_array_in_slice ... ok
+Execution check for package nested_arrays_from_brillig: true
+test test_execute_success_nested_arrays_from_brillig ... ok
+Execution check for package nested_dyn_array_regression_5782: true
+test test_execute_success_nested_dyn_array_regression_5782 ... ok
+Execution check for package nested_fmtstr: true
+test test_execute_success_nested_fmtstr ... ok
+Execution check for package nested_if_then_block_same_cond: true
+test test_execute_success_nested_if_then_block_same_cond ... ok
+Execution check for package no_predicates_basic: true
+test test_execute_success_no_predicates_basic ... ok
+Execution check for package no_predicates_brillig: true
+test test_execute_success_no_predicates_brillig ... ok
+Execution check for package overlapping_dep_and_mod: true
+test test_execute_success_overlapping_dep_and_mod ... ok
+test test_execute_success_no_predicates_numeric_generic_poseidon ... ok
+test test_execute_success_pedersen_commitment ... ok
+test test_execute_success_pedersen_check ... ok
+test test_execute_success_pedersen_hash ... ok
+Execution check for package global_var_regression_simple: false
+test test_execute_success_global_var_regression_simple ... ok
+Execution check for package pred_eq: true
+test test_execute_success_pred_eq ... ok
+Execution check for package prelude: true
+test test_execute_success_prelude ... ok
+Execution check for package hint_black_box: false
+test test_execute_success_hint_black_box ... ok
+Execution check for package if_else_chain: false
+test test_execute_success_if_else_chain ... ok
+true
+true
+Execution check for package reference_cancelling: true
+test test_execute_success_reference_cancelling ... ok
+Execution check for package reference_counts_inliner_0: true
+test test_execute_success_reference_counts_inliner_0 ... ok
+Execution check for package reference_counts_inliner_max: true
+test test_execute_success_reference_counts_inliner_max ... ok
+Execution check for package reference_counts_inliner_min: true
+test test_execute_success_reference_counts_inliner_min ... ok
+Execution check for package reference_counts_slices_inliner_0: true
+test test_execute_success_reference_counts_slices_inliner_0 ... ok
+Execution check for package references: true
+test test_execute_success_references ... ok
+Execution check for package regression_11294: true
+test test_execute_success_regression_11294 ... ok
+Execution check for package conditional_regression_661: false
+test test_execute_success_conditional_regression_661 ... ok
+Execution check for package nested_array_dynamic: false
+test test_execute_success_nested_array_dynamic ... ok
+Execution check for package regression_3051: true
+test test_execute_success_regression_3051 ... ok
+Execution check for package regression_3394: true
+test test_execute_success_regression_3394 ... ok
+test test_execute_success_ram_blowup_regression ... ok
+Execution check for package regression_3889: true
+test test_execute_success_regression_3889 ... ok
+Execution check for package regression_4088: true
+test test_execute_success_regression_4088 ... ok
+Execution check for package regression_4124: true
+test test_execute_success_regression_4124 ... ok
+Execution check for package regression_4202: true
+test test_execute_success_regression_4202 ... ok
+test test_execute_success_regression_4449 ... ok
+Execution check for package integer_array_indexing: false
+test test_execute_success_integer_array_indexing ... ok
+test test_execute_success_regression_5045 ... ok
+Execution check for package lambda_from_array: false
+test test_execute_success_lambda_from_array ... ok
+Execution check for package regression_5435: true
+test test_execute_success_regression_5435 ... ok
+Execution check for package loop_invariant_regression: false
+test test_execute_success_loop_invariant_regression ... ok
+Execution check for package regression_5615: true
+test test_execute_success_regression_5615 ... ok
+Execution check for package regression_6451: true
+test test_execute_success_regression_6451 ... ok
+Execution check for package regression_6674_1: true
+test test_execute_success_regression_6674_1 ... ok
+Execution check for package regression_6674_2: true
+test test_execute_success_regression_6674_2 ... ok
+Execution check for package regression_6674_3: true
+test test_execute_success_regression_6674_3 ... ok
+Execution check for package regression_6734: true
+test test_execute_success_regression_6734 ... ok
+test test_execute_success_regression_5252 ... ok
+Execution check for package lambda_from_dynamic_if: false
+test test_execute_success_lambda_from_dynamic_if ... ok
+test test_execute_success_regression_7143 ... ok
+Execution check for package regression_7128: false
+test test_execute_success_regression_7128 ... ok
+Execution check for package regression_7195: true
+test test_execute_success_regression_7195 ... ok
+Execution check for package regression_7323: true
+test test_execute_success_regression_7323 ... ok
+Execution check for package regression_7451: true
+test test_execute_success_regression_7451 ... ok
+test test_execute_success_regression_7612 ... ok
+test test_execute_success_regression_7744 ... ok
+Execution check for package nested_array_dynamic_simple: false
+test test_execute_success_nested_array_dynamic_simple ... ok
+Execution check for package regression_8009: true
+test test_execute_success_regression_8009 ... ok
+Execution check for package regression_8011: true
+test test_execute_success_regression_8011 ... ok
+Execution check for package regression_8174: true
+test test_execute_success_regression_8174 ... ok
+Execution check for package poseidonsponge_x5_254: false
+test test_execute_success_poseidonsponge_x5_254 ... ok
+Execution check for package regression_8212: true
+test test_execute_success_regression_8212 ... ok
+Execution check for package poseidon_bn254_hash_width_3: false
+test test_execute_success_poseidon_bn254_hash_width_3 ... ok
+Execution check for package regression_8235: true
+test test_execute_success_regression_8235 ... ok
+Execution check for package reference_only_used_as_alias: false
+test test_execute_success_reference_only_used_as_alias ... ok
+Execution check for package regression_8329: true
+test test_execute_success_regression_8329 ... ok
+Execution check for package regression_2660: false
+test test_execute_success_regression_2660 ... ok
+Execution check for package regression_3607: false
+test test_execute_success_regression_3607 ... ok
+Execution check for package regression_8662: true
+test test_execute_success_regression_8662 ... ok
+Execution check for package regression_4709: false
+test test_execute_success_regression_4709 ... ok
+Execution check for package regression_8729: true
+test test_execute_success_regression_8729 ... ok
+Execution check for package regression_8739: true
+test test_execute_success_regression_8739 ... ok
+Execution check for package regression_8755: true
+test test_execute_success_regression_8755 ... ok
+Execution check for package regression_8761: true
+test test_execute_success_regression_8761 ... ok
+Execution check for package regression_8779: true
+test test_execute_success_regression_8779 ... ok
+Execution check for package regression_1144_1169_2399_6609: false
+test test_execute_success_regression_1144_1169_2399_6609 ... ok
+Execution check for package regression_8890: true
+test test_execute_success_regression_8890 ... ok
+Execution check for package regression_8926: true
+test test_execute_success_regression_8926 ... ok
+Execution check for package regression_8975: true
+test test_execute_success_regression_8975 ... ok
+Execution check for package regression_8980: true
+test test_execute_success_regression_8980 ... ok
+Execution check for package regression_9037: true
+test test_execute_success_regression_9037 ... ok
+Execution check for package regression_9047: true
+test test_execute_success_regression_9047 ... ok
+Execution check for package regression_9102: true
+test test_execute_success_regression_9102 ... ok
+Execution check for package regression_9116: true
+test test_execute_success_regression_9116 ... ok
+Execution check for package regression_9119: true
+test test_execute_success_regression_9119 ... ok
+Execution check for package regression_9160: true
+test test_execute_success_regression_9160 ... ok
+Execution check for package regression_9193: true
+test test_execute_success_regression_9193 ... ok
+Execution check for package regression_9206: true
+test test_execute_success_regression_9206 ... ok
+Execution check for package regression_6834: false
+test test_execute_success_regression_6834 ... ok
+Execution check for package regression_9243: true
+test test_execute_success_regression_9243 ... ok
+Execution check for package regression_9303: true
+test test_execute_success_regression_9303 ... ok
+Execution check for package regression_7062: false
+test test_execute_success_regression_7062 ... ok
+Execution check for package regression_7962: false
+test test_execute_success_regression_7962 ... ok
+Execution check for package regression_7836: false
+test test_execute_success_regression_7836 ... ok
+Execution check for package regression_method_cannot_be_found: true
+test test_execute_success_regression_method_cannot_be_found ... ok
+Execution check for package regression_8261: false
+test test_execute_success_regression_8261 ... ok
+Execution check for package regression_unsafe_no_predicates: true
+test test_execute_success_regression_unsafe_no_predicates ... ok
+Execution check for package regression_8305: false
+test test_execute_success_regression_8305 ... ok
+Execution check for package regression_unused_nested_array_get: true
+test test_execute_success_regression_unused_nested_array_get ... ok
+Execution check for package return_twice: true
+test test_execute_success_return_twice ... ok
+Execution check for package regression_8558: false
+test test_execute_success_regression_8558 ... ok
+Execution check for package regression_8236: false
+test test_execute_success_regression_8236 ... ok
+Execution check for package regression_8726: false
+test test_execute_success_regression_8726 ... ok
+Execution check for package regression_8874: false
+test test_execute_success_regression_8874 ... ok
+Execution check for package regression_9208: false
+test test_execute_success_regression_9208 ... ok
+Execution check for package regression_9312: false
+test test_execute_success_regression_9312 ... ok
+Execution check for package regression_capacity_tracker: false
+test test_execute_success_regression_capacity_tracker ... ok
+Execution check for package regression_mem_op_predicate: false
+test test_execute_success_regression_mem_op_predicate ... ok
+Execution check for package regression_struct_array_conditional: false
+test test_execute_success_regression_struct_array_conditional ... ok
+Execution check for package simple_2d_array: true
+test test_execute_success_simple_2d_array ... ok
+Execution check for package simple_add_and_ret_arr: true
+test test_execute_success_simple_add_and_ret_arr ... ok
+Execution check for package simple_array_param: true
+test test_execute_success_simple_array_param ... ok
+test test_execute_success_simple_bitwise ... ok
+Execution check for package side_effects_constrain_array: false
+test test_execute_success_side_effects_constrain_array ... ok
+Execution check for package simple_mut: true
+test test_execute_success_simple_mut ... ok
+Execution check for package signed_arithmetic: false
+test test_execute_success_signed_arithmetic ... ok
+Execution check for package simple_not: true
+test test_execute_success_simple_not ... ok
+Execution check for package simple_print: true
+test test_execute_success_simple_print ... ok
+Execution check for package simple_program_addition: true
+test test_execute_success_simple_program_addition ... ok
+Execution check for package simple_radix: true
+test test_execute_success_simple_radix ... ok
+test test_execute_success_simple_shield ... ok
+Execution check for package slice_coercion: true
+test test_execute_success_slice_coercion ... ok
+Execution check for package signed_cmp: false
+test test_execute_success_signed_cmp ... ok
+Execution check for package shift_right_overflow: false
+test test_execute_success_shift_right_overflow ... ok
+Execution check for package slice_dynamic_index: false
+test test_execute_success_slice_dynamic_index ... ok
+Execution check for package slice_loop: true
+test test_execute_success_slice_loop ... ok
+Execution check for package slice_regex: true
+test test_execute_success_slice_regex ... ok
+Execution check for package static_assert_empty_loop: true
+test test_execute_success_static_assert_empty_loop ... ok
+Execution check for package strings: true
+test test_execute_success_strings ... ok
+Execution check for package struct: true
+test test_execute_success_struct ... ok
+Execution check for package struct_array_inputs: true
+test test_execute_success_struct_array_inputs ... ok
+Execution check for package struct_assignment_with_shared_ref_to_field: true
+test test_execute_success_struct_assignment_with_shared_ref_to_field ... ok
+Execution check for package struct_fields_ordering: true
+test test_execute_success_struct_fields_ordering ... ok
+Execution check for package submodules: true
+test test_execute_success_submodules ... ok
+Execution check for package signed_comparison: false
+test test_execute_success_signed_comparison ... ok
+Execution check for package to_bytes_consistent: true
+test test_execute_success_to_bytes_consistent ... ok
+Execution check for package signed_div: false
+test test_execute_success_signed_div ... ok
+Execution check for package slices: false
+test test_execute_success_slices ... ok
+Execution check for package signed_division: false
+test test_execute_success_signed_division ... ok
+Execution check for package trait_associated_constant: true
+test test_execute_success_trait_associated_constant ... ok
+Execution check for package trait_impl_base_type: true
+test test_execute_success_trait_impl_base_type ... ok
+Execution check for package traits_in_crates_1: true
+test test_execute_success_traits_in_crates_1 ... ok
+Execution check for package traits_in_crates_2: true
+test test_execute_success_traits_in_crates_2 ... ok
+test test_execute_success_regression_8519 has been running for over 60 seconds
+Execution check for package signed_overflow_in_else_regression_8617: false
+test test_execute_success_signed_overflow_in_else_regression_8617 ... ok
+Execution check for package tuples: true
+test test_execute_success_tuples ... ok
+Execution check for package type_aliases: true
+test test_execute_success_type_aliases ... ok
+test test_execute_success_u128_type ... ok
+Execution check for package signed_truncation: false
+test test_execute_success_signed_truncation ... ok
+Execution check for package uhashmap: true
+test test_execute_success_uhashmap ... ok
+Execution check for package signed_inactive_division_by_zero: false
+test test_execute_success_signed_inactive_division_by_zero ... ok
+Execution check for package unrolling_regression_8333: true
+test test_execute_success_unrolling_regression_8333 ... ok
+Execution check for package simple_comparison: false
+test test_execute_success_simple_comparison ... ok
+Execution check for package struct_inputs: false
+test test_execute_success_struct_inputs ... ok
+Execution check for package while_loop_break_regression_8521: true
+test test_execute_success_while_loop_break_regression_8521 ... ok
+Execution check for package wildcard_type: true
+test test_execute_success_wildcard_type ... ok
+Execution check for package to_be_bytes: false
+test test_execute_success_to_be_bytes ... ok
+Execution check for package witness_compression: true
+test test_execute_success_witness_compression ... ok
+Execution check for package a: true
+Execution check for package b: true
+test test_execute_success_workspace ... ok
+Execution check for package a: true
+test test_execute_success_workspace_default_member ... ok
+test test_execute_success_xor ... ok
+Execution check for package to_bytes_integration: false
+test test_execute_success_to_bytes_integration ... ok
+Execution check for package simple_shift_left_right: false
+test test_execute_success_simple_shift_left_right ... ok
+Execution check for package to_le_bytes: false
+test test_execute_success_to_le_bytes ... ok
+Execution check for package tuple_inputs: false
+test test_execute_success_tuple_inputs ... ok
+Execution check for package trait_as_return_type: false
+test test_execute_success_trait_as_return_type ... ok
+Execution check for package u16_support: false
+test test_execute_success_u16_support ... ok
+Execution check for package unary_operator_overloading: false
+test test_execute_success_unary_operator_overloading ... ok
+Execution check for package unsigned_to_signed_cast: false
+test test_execute_success_unsigned_to_signed_cast ... ok
+Execution check for package wrapping_operations: false
+test test_execute_success_wrapping_operations ... ok
+Execution check for package regression_8519: false
+test test_execute_success_regression_8519 ... ok
+Execution check for package unsafe_range_constraint: false
+test test_execute_success_unsafe_range_constraint ... ok
+
+test result: ok. 318 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 213.55s
+

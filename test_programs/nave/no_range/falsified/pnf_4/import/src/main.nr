@@ -1,0 +1,10 @@
+mod import;
+use crate::import::hello;
+
+fn main(x: Field, y: Field) {
+    let _k = std::hash::pedersen_commitment([x]);
+    let _l = hello(x);
+
+    unsafe { verify_assert(x != import::hello(y)); }
+}
+unconstrained fn verify_assert(b: bool) { assert(false); }
