@@ -280,7 +280,8 @@ impl Solver {
         for option in options {
             conf.option(option);
         }
-        Self { rsmt: rsmt2::Solver::new(conf, ()).unwrap(), prime }
+        let rsmt = rsmt2::Solver::new(conf, ()).unwrap();
+        Self { rsmt, prime }
     }
     fn new(prime: &'static str) -> Self {
         Self::new_with_options(prime, vec![])

@@ -1,7 +1,7 @@
 // Function for running the verifier for ACIR
 
 use crate::{
-    encoder::Translator,
+    encoder::{Translator, num_vars},
     smt::{Bool, SolverOutput, Value},
 };
 use acir::{FieldElement, circuit::Circuit, native_types::WitnessMap};
@@ -94,8 +94,9 @@ pub fn check_program(
     }
     let ver_conds = {
         let use_int = use_int(backend);
+        let next_witness_index = num_vars(circuit);
         let mut translator =
-            Translator::new(&mut solver, brillig_funcs, circuit.num_vars(), use_int, strict);
+            Translator::new(&mut solver, brillig_funcs, next_witness_index, use_int, strict);
         translator.translate_to_smt(circuit)?;
         translator.ver_conds()
     };
@@ -125,8 +126,9 @@ pub fn check_execution(
 
     let brillig_funcs: HashMap<u32, String> = HashMap::new();
     let use_int = use_int(backend);
+    let next_witness_index = num_vars(circuit);
     let mut translator =
-        Translator::new(&mut solver, brillig_funcs, circuit.num_vars(), use_int, strict);
+        Translator::new(&mut solver, brillig_funcs, next_witness_index, use_int, strict);
     translator.translate_to_smt(circuit)?;
     translator.translate_witness_map(witness_map)?;
 

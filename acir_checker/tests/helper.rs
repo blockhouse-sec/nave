@@ -11,11 +11,12 @@ use acir_checker::{
 
 use noirc_driver::{
     CompileOptions, 
-    CompiledProgram, 
     file_manager_with_stdlib, 
     prepare_crate
 };
 
+use noirc_artifacts::program::CompiledProgram;
+ 
 use noirc_frontend::{
     hir::{
         Context, 
@@ -89,7 +90,8 @@ pub(crate) fn compile_and_check(
 
     for program in comp_programs {
         let circuit = program.program.functions.first().unwrap();
-        result.extend(check_program(circuit, program.brillig_names, backend, strict)?);
+        let brillig_names = program.program.unconstrained_functions.iter().map(|f| f.function_name.clone()).collect();
+        result.extend(check_program(circuit, brillig_names, backend, strict)?);
     }
     Ok(result)
 }

@@ -15,8 +15,7 @@ use acir::{
             AcirFunctionId, 
             BlackBoxFuncCall, 
             BlockId, 
-            BlockType, 
-            ConstantOrWitnessEnum,
+            BlockType,
             FunctionInput, 
             MemOp,
         },
@@ -81,6 +80,7 @@ impl<'a, F: AcirField> Translator<'a, F> {
 
     // Assumes that witnesses in witness_map are already declared in the solver
     pub(crate) fn translate_witness_map(&mut self, witness_map: WitnessMap<F>) -> Result<(), Error> {
+        println!("Translating witness map {:?}", witness_map);
         for (witness, value) in witness_map {
             if self.use_int {
                 let wit = self.new_const_int(witness);
@@ -104,7 +104,7 @@ impl<'a, F: AcirField> Translator<'a, F> {
         &mut self, 
         circuit: &Circuit<F>
     ) -> Result<(), Error> {
-        let num_vars = circuit.num_vars();
+        let num_vars = num_vars(circuit);
         let _witnesses = circuit.circuit_arguments();
         let _public_inputs = circuit.public_inputs();
         
@@ -126,7 +126,7 @@ impl<'a, F: AcirField> Translator<'a, F> {
                     let res = self.translate_blackbox_call(black_box_func_call);
                     check_strictness(self.strict, res)?;
                 }
-                acir::circuit::Opcode::MemoryOp { block_id, op, predicate: _ } => {
+                acir::circuit::Opcode::MemoryOp { block_id, op } => {
                     let mem_trace = mem_traces
                         .get_mut(block_id)
                         .expect("MemInit opcode should have run before");
@@ -142,11 +142,11 @@ impl<'a, F: AcirField> Translator<'a, F> {
                     mem_traces.insert(*block_id, mem_trace);
                 }
                 acir::circuit::Opcode::BrilligCall { id, inputs, outputs, predicate } => {
-                    let res = self.translate_brilling_call(opcode_loc, *id, inputs, outputs, predicate.as_ref());
+                    let res = self.translate_brilling_call(opcode_loc, *id, inputs, outputs, predicate);
                     check_strictness(self.strict, res)?;
                 }
                 acir::circuit::Opcode::Call { id, inputs, outputs, predicate } => {
-                    let res = self.translate_call(*id, inputs, outputs, predicate.as_ref());
+                    let res = self.translate_call(*id, inputs, outputs, predicate);
                     check_strictness(self.strict, res)?;
                 }
             }
@@ -336,8 +336,8 @@ impl<'a, F: AcirField> Translator<'a, F> {
             BlackBoxFuncCall::XOR { .. } => {
                 Err(Error::EncodingError("XOR black box function is not supported".to_string()))
             }
-            BlackBoxFuncCall::RANGE { input } => {
-                self.translate_range(input);
+            BlackBoxFuncCall::RANGE { input, num_bits } => {
+                self.translate_range(input, *num_bits);
                 Ok(())
             }
             BlackBoxFuncCall::AES128Encrypt { .. } => Err(Error::EncodingError(
@@ -366,24 +366,6 @@ impl<'a, F: AcirField> Translator<'a, F> {
             )),
             BlackBoxFuncCall::RecursiveAggregation { .. } => Err(Error::EncodingError(
                 "RecursiveAggregation black box function is not supported".to_string(),
-            )),
-            BlackBoxFuncCall::BigIntAdd { .. } => Err(Error::EncodingError(
-                "BigIntAdd black box function is not supported".to_string(),
-            )),
-            BlackBoxFuncCall::BigIntSub { .. } => Err(Error::EncodingError(
-                "BigIntSub black box function is not supported".to_string(),
-            )),
-            BlackBoxFuncCall::BigIntMul { .. } => Err(Error::EncodingError(
-                "BigIntMul black box function is not supported".to_string(),
-            )),
-            BlackBoxFuncCall::BigIntDiv { .. } => Err(Error::EncodingError(
-                "BigIntDiv black box function is not supported".to_string(),
-            )),
-            BlackBoxFuncCall::BigIntFromLeBytes { .. } => Err(Error::EncodingError(
-                "BigIntFromLeBytes black box function is not supported".to_string(),
-            )),
-            BlackBoxFuncCall::BigIntToLeBytes { .. } => Err(Error::EncodingError(
-                "BigIntToLeBytes black box function is not supported".to_string(),
             )),
             BlackBoxFuncCall::Poseidon2Permutation { .. } => Err(Error::EncodingError(
                 "Poseidon2Permutation black box function is not supported".to_string(),
@@ -469,7 +451,7 @@ impl<'a, F: AcirField> Translator<'a, F> {
         id: BrilligFunctionId,
         inputs: &[BrilligInputs<F>],
         _outputs: &[BrilligOutputs],
-        predicate: Option<&Expression<F>>,
+        predicate: &Expression<F>,
     ) -> Result<(), Error> {
         // predicate indicates if brillig call should be skipped
         if let Some(func_name) = self.brillig_funcs.get(&id.0) {
@@ -488,21 +470,24 @@ impl<'a, F: AcirField> Translator<'a, F> {
         &mut self, 
         opcode_loc: usize,
         inputs: &[BrilligInputs<F>],
-        predicate: Option<&Expression<F>>,
+        predicate: &Expression<F>,
     ) -> Result<(), Error> {
         for input in inputs {
             match input {
                 BrilligInputs::Single(exp) => {
                     let new_cond_lit = self.new_cond_lit(opcode_loc);
                     if self.use_int {
-                        match predicate {
-                            Some(pred_exp) => {
-                                let exp_int = self.translate_expression_int(pred_exp);
-                                let one = self.one_int();
-                                self.solver.assert(exp_int.eq(one));
-                            },
-                            None => {}
-                        }
+                        // match predicate {
+                        //     Some(pred_exp) => {
+                        //         let exp_int = self.translate_expression_int(pred_exp);
+                        //         let one = self.one_int();
+                        //         self.solver.assert(exp_int.eq(one));
+                        //     },
+                        //     None => {}
+                        // }
+                        // TODO: properly handle predicate instead of assuming it's always one
+                        assert!(predicate == &Expression::one());
+
                         let exp_int = self.translate_expression_int(exp);
                         let new_wit = self.new_witness_int();
                         self.solver.assert(exp_int.eq(new_wit.clone()));
@@ -511,14 +496,20 @@ impl<'a, F: AcirField> Translator<'a, F> {
                         self.solver.assert(new_cond_lit.clone().imp(new_wit.clone().eq(zero)));
                         self.solver.assert(new_cond_lit.neg().imp(new_wit.clone().eq(one)));
                     } else {
-                        match predicate {
-                            Some(pred_exp) => {
-                                let exp = self.translate_expression(pred_exp);
-                                let one = self.one();
-                                self.solver.assert(exp.eq(one));
-                            },
-                            None => {}
-                        }
+                        // match predicate {
+                        //     Some(pred_exp) => {
+                        //         let exp = self.translate_expression(pred_exp);
+                        //         let one = self.one();
+                        //         self.solver.assert(exp.eq(one));
+                        //     },
+                        //     None => {}
+                        // }
+
+                        // TODO: properly handle predicate instead of assuming it's always one
+                        assert!(predicate == &Expression::one());
+
+
+
                         let exp = self.translate_expression(exp);
                         let new_wit = self.new_witness();
                         self.solver.assert(exp.eq(new_wit.clone()));
@@ -547,31 +538,39 @@ impl<'a, F: AcirField> Translator<'a, F> {
         &mut self,
         _opcode_loc: usize,
         inputs: &[BrilligInputs<F>],
-        predicate: Option<&Expression<F>>,
+        predicate: &Expression<F>,
     ) -> Result<(), Error> {
         for input in inputs {
             match input {
                 BrilligInputs::Single(exp) => {
                     if self.use_int {
                         let one_int = self.one_int();
-                        match predicate {
-                            Some(pred_exp) => {
-                                let exp_int = self.translate_expression_int(pred_exp);
-                                self.solver.assert(exp_int.eq(one_int.clone()));
-                            },
-                            None => {}
-                        }
+                        // match predicate {
+                        //     Some(pred_exp) => {
+                        //         let exp_int = self.translate_expression_int(pred_exp);
+                        //         self.solver.assert(exp_int.eq(one_int.clone()));
+                        //     },
+                        //     None => {}
+                        // }
+
+                        // TODO: properly handle predicate instead of assuming it's always one
+                        assert!(predicate == &Expression::one());
+
                         let exp_int = self.translate_expression_int(exp);
                         self.solver.assert(exp_int.eq(one_int));
                     } else {
                         let one = self.one();
-                        match predicate {
-                            Some(pred_exp) => {
-                                let exp = self.translate_expression(pred_exp);
-                                self.solver.assert(exp.eq(one.clone()));
-                            },
-                            None => {}
-                        }
+                        // match predicate {
+                        //     Some(pred_exp) => {
+                        //         let exp = self.translate_expression(pred_exp);
+                        //         self.solver.assert(exp.eq(one.clone()));
+                        //     },
+                        //     None => {}
+                        // }
+
+                        // TODO: properly handle predicate instead of assuming it's always one
+                        assert!(predicate == &Expression::one());
+
                         let exp = self.translate_expression(exp);
                         self.solver.assert(exp.eq(one));
                     }
@@ -622,7 +621,7 @@ impl<'a, F: AcirField> Translator<'a, F> {
         _id: AcirFunctionId,
         _inputs: &[Witness],
         _outputs: &[Witness],
-        _predicate: Option<&Expression<F>>,
+        _predicate: &Expression<F>,
     ) -> Result<(), Error> {
         {
             return Err(Error::EncodingError(
@@ -631,18 +630,18 @@ impl<'a, F: AcirField> Translator<'a, F> {
         }
     }
 
-    fn translate_range(&mut self, input: &FunctionInput<F>) {
+    fn translate_range(&mut self, input: &FunctionInput<F> , num_bits: u32) {
         // TODO: optimise to combine all ranges over the same variable
-        match input.input() {
-            ConstantOrWitnessEnum::Constant(_) => {
+        match input {
+            FunctionInput::Constant(_) => {
                 println!("unimplemented constant input");
                 return;
             }
-            ConstantOrWitnessEnum::Witness(witness) => {
+            FunctionInput::Witness(witness) => {
                 if self.use_int {
-                    self.translate_range_int(witness, input.num_bits());
+                    self.translate_range_int(*witness, num_bits);
                 } else {
-                    self.translate_range_bitsum(witness, input.num_bits());
+                    self.translate_range_bitsum(*witness, num_bits);
                 }
             }
         }
@@ -835,6 +834,10 @@ impl<'a, F: AcirField> Translator<'a, F> {
     pub(crate) fn ver_conds(&self) -> Vec<(String, usize)> {
         self.ver_conds.clone()
     }
+}
+
+pub(crate) fn num_vars<F: AcirField>(circuit: &Circuit<F>) -> u32 {
+    circuit.current_witness_index + 1
 }
 
 fn check_strictness(strict: bool, res: Result<(), Error>) -> Result<(), Error> {

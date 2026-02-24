@@ -17,7 +17,7 @@ use acir_checker::{
     check_program,
     check_execution as check_execution_func,
 };
-use acvm::acir::circuit::AcirOpcodeLocation;
+use acvm::acir::{brillig, circuit::AcirOpcodeLocation};
 use nargo::{
     package::Package,
     workspace::Workspace,
@@ -32,10 +32,12 @@ use noir_artifact_cli::{
 };
 use noirc_driver::{
     CompileOptions, 
-    CompiledProgram,
     check_crate, 
     compile_no_check,
 };
+
+use noirc_artifacts::program::CompiledProgram;
+
 use noirc_errors::{
     Location, 
     Span,
@@ -172,6 +174,7 @@ pub(crate) fn run(
                     package.name, e)
                 )
             })?;
+            return Ok(());
         }
 
         println!(
@@ -250,7 +253,8 @@ fn run_formal_harness(
     let is_verbose = args.formal_verify_options.verbose;
 
     let circuit = compiled_program.program.functions.first().unwrap();
-    let outputs = check_program(circuit, compiled_program.brillig_names.clone(), backend, strict).map_err(|e| {
+    let brillig_names = compiled_program.program.unconstrained_functions.iter().map(|f| f.function_name.clone()).collect();
+    let outputs = check_program(circuit, brillig_names, backend, strict).map_err(|e| {
         CliError::Generic(format!(
             "Failed to check program for package {}: {}",
             package.name, e

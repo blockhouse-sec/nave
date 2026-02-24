@@ -22,30 +22,30 @@ build-data = "^0.3.3"
 
 [dependencies]
 clap = { version = "4.3.19", features = ["derive", "env"] }
-fm = { git = "https://github.com/pedrotbtl/noir-pub.git", branch = "nave"}
-nargo = { git = "https://github.com/pedrotbtl/noir-pub.git", branch = "nave", features = ["rpc"] }
-nargo_cli = { git = "https://github.com/pedrotbtl/noir-pub.git", branch = "nave"}
+fm = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.19" }
+nargo = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.19" , features = ["rpc"] }
+nargo_cli = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.19" }
 # nargo_expand.workspace = true
 # nargo_fmt.workspace = true
-nargo_toml = { git = "https://github.com/pedrotbtl/noir-pub.git", branch = "nave"}
+nargo_toml = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.19" }
 # noir_lsp.workspace = true
-noir_artifact_cli = {git = "https://github.com/pedrotbtl/noir-pub.git", branch = "nave" }
-# noir_debugger = { git = "https://github.com/pedrotbtl/noir-pub.git", branch = "nave" }
+noir_artifact_cli = {git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.19"  }
+# noir_debugger = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.19"  }
 # noirc_evaluator.workspace = true
-noirc_driver = { git = "https://github.com/pedrotbtl/noir-pub.git", branch = "nave", features = ["bn254"] }
-noirc_frontend = { git = "https://github.com/pedrotbtl/noir-pub.git", branch = "nave", features = ["bn254"] }
-noirc_abi = { git = "https://github.com/pedrotbtl/noir-pub.git", branch = "nave"}
-noirc_errors = { git = "https://github.com/pedrotbtl/noir-pub.git", branch = "nave"}
-# noirc_artifacts = { git = "https://github.com/pedrotbtl/noir-pub.git", branch = "nave"}
-# noirc_artifacts_info = { git = "https://github.com/pedrotbtl/noir-pub.git", branch = "nave"}
+noirc_driver = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.19" , features = ["bn254"] }
+noirc_frontend = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.19" , features = ["bn254"] }
+noirc_abi = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.19" }
+noirc_errors = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.19" }
+noirc_artifacts = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.19" }
+# noirc_artifacts_info = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.19" }
 # noir_ast_fuzzer.workspace = true
-acvm = { git = "https://github.com/pedrotbtl/noir-pub.git", branch = "nave", features = ["bn254"] }
+acvm = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.19" , features = ["bn254"] }
 acir_checker.workspace = true
 thiserror = "1.0.21"
 const_format = "0.2.30"
 termcolor = "1.1.2"
 color-eyre = "0.6.2"
-clap-markdown = { git = "https://github.com/noir-lang/clap-markdown", rev = "450d759532c88f0dba70891ceecdbc9ff8f25d2b", optional = true }
+# clap-markdown = { git = "https://github.com/noir-lang/clap-markdown", rev = "450d759532c88f0dba70891ceecdbc9ff8f25d2b", optional = true }
 
 # Logs
 tracing = "0.1.40"
@@ -53,11 +53,3 @@ tracing-subscriber = { version = "0.3.18", features = ["env-filter", "json"] }
 tracing-appender = "0.2.3"
 fs2 = "0.4.3"
 
-[target.'cfg(not(unix))'.dependencies]
-tokio-util = { version = "0.7.8", features = ["compat"] }
-
-[dev-dependencies]
-
-
-[features]
-codegen-docs = ["dep:clap-markdown"]

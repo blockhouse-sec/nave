@@ -4,7 +4,8 @@ use nargo::package::Package;
 use nargo_cli::cli::compile_cmd::compile_workspace_full;
 use nargo_toml::resolve_workspace_from_toml;
 use noir_artifact_cli::{Artifact, fs::inputs::read_inputs_from_file};
-use noirc_driver::{CompileOptions, CompiledProgram, NOIR_ARTIFACT_VERSION_STRING};
+use noirc_artifacts::program::CompiledProgram;
+use noirc_driver::{CompileOptions, NOIR_ARTIFACT_VERSION_STRING};
 
 fn run_execution_test_failure(nargo_toml_path: &str) {
     let cargo_manifest_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
@@ -64,16 +65,40 @@ fn check_execution_test(package: &Package, witness_map: WitnessMap<FieldElement>
     }
 }
 #[test]
+fn test_execute_failure_regression_10929() {
+    run_execution_test_failure("test_programs/execution_failure/regression_10929/Nargo.toml");
+}
+#[test]
+fn test_execute_failure_regression_9489() {
+    run_execution_test_failure("test_programs/execution_failure/regression_9489/Nargo.toml");
+}
+#[test]
 fn test_execute_failure_invalid_comptime_bits_decomposition() {
     run_execution_test_failure("test_programs/execution_failure/invalid_comptime_bits_decomposition/Nargo.toml");
+}
+#[test]
+fn test_execute_failure_vector_insert_failure() {
+    run_execution_test_failure("test_programs/execution_failure/vector_insert_failure/Nargo.toml");
+}
+#[test]
+fn test_execute_failure_vector_pop_back_oob() {
+    run_execution_test_failure("test_programs/execution_failure/vector_pop_back_oob/Nargo.toml");
 }
 #[test]
 fn test_execute_failure_regression_8994() {
     run_execution_test_failure("test_programs/execution_failure/regression_8994/Nargo.toml");
 }
 #[test]
-fn test_execute_failure_slice_insert_failure() {
-    run_execution_test_failure("test_programs/execution_failure/slice_insert_failure/Nargo.toml");
+fn test_execute_failure_signed_modulo_by_minus_one_overflow() {
+    run_execution_test_failure("test_programs/execution_failure/signed_modulo_by_minus_one_overflow/Nargo.toml");
+}
+#[test]
+fn test_execute_failure_regression_databus_out_of_bounds() {
+    run_execution_test_failure("test_programs/execution_failure/regression_databus_out_of_bounds/Nargo.toml");
+}
+#[test]
+fn test_execute_failure_conditional_pop_front_from_empty_vector() {
+    run_execution_test_failure("test_programs/execution_failure/conditional_pop_front_from_empty_vector/Nargo.toml");
 }
 #[test]
 fn test_execute_failure_lambda_from_empty_array_dyn_index() {
@@ -84,24 +109,32 @@ fn test_execute_failure_fold_dyn_index_fail() {
     run_execution_test_failure("test_programs/execution_failure/fold_dyn_index_fail/Nargo.toml");
 }
 #[test]
-fn test_execute_failure_slice_remove_failure() {
-    run_execution_test_failure("test_programs/execution_failure/slice_remove_failure/Nargo.toml");
+fn test_execute_failure_regression_9986() {
+    run_execution_test_failure("test_programs/execution_failure/regression_9986/Nargo.toml");
 }
 #[test]
 fn test_execute_failure_div_by_zero_numerator_witness() {
     run_execution_test_failure("test_programs/execution_failure/div_by_zero_numerator_witness/Nargo.toml");
 }
 #[test]
+fn test_execute_failure_ecdsa_secp256k1_r_zero() {
+    run_execution_test_failure("test_programs/execution_failure/ecdsa_secp256k1_r_zero/Nargo.toml");
+}
+#[test]
 fn test_execute_failure_regression_8231() {
     run_execution_test_failure("test_programs/execution_failure/regression_8231/Nargo.toml");
+}
+#[test]
+fn test_execute_failure_ecdsa_secp256k1_invalid_pubkey() {
+    run_execution_test_failure("test_programs/execution_failure/ecdsa_secp256k1_invalid_pubkey/Nargo.toml");
 }
 #[test]
 fn test_execute_failure_dynamic_index_failure() {
     run_execution_test_failure("test_programs/execution_failure/dynamic_index_failure/Nargo.toml");
 }
 #[test]
-fn test_execute_failure_slice_access_failure() {
-    run_execution_test_failure("test_programs/execution_failure/slice_access_failure/Nargo.toml");
+fn test_execute_failure_unused_vector_get_known_index_out_of_bounds() {
+    run_execution_test_failure("test_programs/execution_failure/unused_vector_get_known_index_out_of_bounds/Nargo.toml");
 }
 #[test]
 fn test_execute_failure_unused_array_set_known_index_out_of_bounds() {
@@ -112,6 +145,10 @@ fn test_execute_failure_empty_composite_array_get() {
     run_execution_test_failure("test_programs/execution_failure/empty_composite_array_get/Nargo.toml");
 }
 #[test]
+fn test_execute_failure_vector_remove_oob() {
+    run_execution_test_failure("test_programs/execution_failure/vector_remove_oob/Nargo.toml");
+}
+#[test]
 fn test_execute_failure_div_by_zero_modulo() {
     run_execution_test_failure("test_programs/execution_failure/div_by_zero_modulo/Nargo.toml");
 }
@@ -120,8 +157,24 @@ fn test_execute_failure_div_by_zero_witness() {
     run_execution_test_failure("test_programs/execution_failure/div_by_zero_witness/Nargo.toml");
 }
 #[test]
+fn test_execute_failure_signed_division_by_minus_one_overflow() {
+    run_execution_test_failure("test_programs/execution_failure/signed_division_by_minus_one_overflow/Nargo.toml");
+}
+#[test]
 fn test_execute_failure_regression_8230() {
     run_execution_test_failure("test_programs/execution_failure/regression_8230/Nargo.toml");
+}
+#[test]
+fn test_execute_failure_regression_9852() {
+    run_execution_test_failure("test_programs/execution_failure/regression_9852/Nargo.toml");
+}
+#[test]
+fn test_execute_failure_conditional_pop_back_from_empty_vector() {
+    run_execution_test_failure("test_programs/execution_failure/conditional_pop_back_from_empty_vector/Nargo.toml");
+}
+#[test]
+fn test_execute_failure_vector_access_failure() {
+    run_execution_test_failure("test_programs/execution_failure/vector_access_failure/Nargo.toml");
 }
 #[test]
 fn test_execute_failure_regression_5202() {
@@ -132,8 +185,24 @@ fn test_execute_failure_u128_multiplication_overflow() {
     run_execution_test_failure("test_programs/execution_failure/u128_multiplication_overflow/Nargo.toml");
 }
 #[test]
+fn test_execute_failure_comptime_bitshift_failure() {
+    run_execution_test_failure("test_programs/execution_failure/comptime_bitshift_failure/Nargo.toml");
+}
+#[test]
+fn test_execute_failure_vector_remove_failure() {
+    run_execution_test_failure("test_programs/execution_failure/vector_remove_failure/Nargo.toml");
+}
+#[test]
 fn test_execute_failure_regression_7759() {
     run_execution_test_failure("test_programs/execution_failure/regression_7759/Nargo.toml");
+}
+#[test]
+fn test_execute_failure_regression_10967() {
+    run_execution_test_failure("test_programs/execution_failure/regression_10967/Nargo.toml");
+}
+#[test]
+fn test_execute_failure_ecdsa_secp256k1_s_zero() {
+    run_execution_test_failure("test_programs/execution_failure/ecdsa_secp256k1_s_zero/Nargo.toml");
 }
 #[test]
 fn test_execute_failure_invalid_comptime_bytes_decomposition() {
@@ -148,16 +217,24 @@ fn test_execute_failure_assert_msg_runtime() {
     run_execution_test_failure("test_programs/execution_failure/assert_msg_runtime/Nargo.toml");
 }
 #[test]
+fn test_execute_failure_vector_pop_front_oob() {
+    run_execution_test_failure("test_programs/execution_failure/vector_pop_front_oob/Nargo.toml");
+}
+#[test]
 fn test_execute_failure_regression_8195() {
     run_execution_test_failure("test_programs/execution_failure/regression_8195/Nargo.toml");
+}
+#[test]
+fn test_execute_failure_conditional_remove_from_empty_vector() {
+    run_execution_test_failure("test_programs/execution_failure/conditional_remove_from_empty_vector/Nargo.toml");
 }
 #[test]
 fn test_execute_failure_regression_7128() {
     run_execution_test_failure("test_programs/execution_failure/regression_7128/Nargo.toml");
 }
 #[test]
-fn test_execute_failure_unused_slice_get_known_index_out_of_bounds() {
-    run_execution_test_failure("test_programs/execution_failure/unused_slice_get_known_index_out_of_bounds/Nargo.toml");
+fn test_execute_failure_ecdsa_secp256r1_s_zero() {
+    run_execution_test_failure("test_programs/execution_failure/ecdsa_secp256r1_s_zero/Nargo.toml");
 }
 #[test]
 fn test_execute_failure_mocks_in_execution() {
@@ -172,8 +249,16 @@ fn test_execute_failure_regression_8229() {
     run_execution_test_failure("test_programs/execution_failure/regression_8229/Nargo.toml");
 }
 #[test]
-fn test_execute_failure_unused_slice_get_unknown_index_out_of_bounds() {
-    run_execution_test_failure("test_programs/execution_failure/unused_slice_get_unknown_index_out_of_bounds/Nargo.toml");
+fn test_execute_failure_unused_vector_get_unknown_index_out_of_bounds() {
+    run_execution_test_failure("test_programs/execution_failure/unused_vector_get_unknown_index_out_of_bounds/Nargo.toml");
+}
+#[test]
+fn test_execute_failure_regression_bitshift_normalization() {
+    run_execution_test_failure("test_programs/execution_failure/regression_bitshift_normalization/Nargo.toml");
+}
+#[test]
+fn test_execute_failure_ecdsa_secp256r1_r_zero() {
+    run_execution_test_failure("test_programs/execution_failure/ecdsa_secp256r1_r_zero/Nargo.toml");
 }
 #[test]
 fn test_execute_failure_unused_array_get_known_index_out_of_bounds() {
@@ -190,6 +275,10 @@ fn test_execute_failure_hashmap_load_factor() {
 #[test]
 fn test_execute_failure_unused_array_get_unknown_index_out_of_bounds() {
     run_execution_test_failure("test_programs/execution_failure/unused_array_get_unknown_index_out_of_bounds/Nargo.toml");
+}
+#[test]
+fn test_execute_failure_shl_overflow_u64() {
+    run_execution_test_failure("test_programs/execution_failure/shl_overflow_u64/Nargo.toml");
 }
 #[test]
 fn test_execute_failure_brillig_assert_fail() {
@@ -212,8 +301,28 @@ fn test_execute_failure_fold_nested_brillig_assert_fail() {
     run_execution_test_failure("test_programs/execution_failure/fold_nested_brillig_assert_fail/Nargo.toml");
 }
 #[test]
+fn test_execute_failure_regression_9851() {
+    run_execution_test_failure("test_programs/execution_failure/regression_9851/Nargo.toml");
+}
+#[test]
+fn test_execute_failure_regression_9856() {
+    run_execution_test_failure("test_programs/execution_failure/regression_9856/Nargo.toml");
+}
+#[test]
+fn test_execute_failure_ecdsa_secp256r1_invalid_pubkey() {
+    run_execution_test_failure("test_programs/execution_failure/ecdsa_secp256r1_invalid_pubkey/Nargo.toml");
+}
+#[test]
+fn test_execute_failure_shr_overflow_u64() {
+    run_execution_test_failure("test_programs/execution_failure/shr_overflow_u64/Nargo.toml");
+}
+#[test]
 fn test_execute_failure_regression_9266() {
     run_execution_test_failure("test_programs/execution_failure/regression_9266/Nargo.toml");
+}
+#[test]
+fn test_execute_failure_vector_insert_oob() {
+    run_execution_test_failure("test_programs/execution_failure/vector_insert_oob/Nargo.toml");
 }
 #[test]
 fn test_execute_failure_regression_8175() {

@@ -53,7 +53,8 @@ use nargo::package::Package;
 use nargo_cli::cli::compile_cmd::compile_workspace_full;
 use nargo_toml::resolve_workspace_from_toml;
 use noir_artifact_cli::{Artifact, fs::inputs::read_inputs_from_file};
-use noirc_driver::{CompileOptions, CompiledProgram, NOIR_ARTIFACT_VERSION_STRING};
+use noirc_artifacts::program::CompiledProgram;
+use noirc_driver::{CompileOptions, NOIR_ARTIFACT_VERSION_STRING};
 
 fn run_execution_test_success(nargo_toml_path: &str) {
     let cargo_manifest_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
@@ -113,7 +114,8 @@ use nargo::package::Package;
 use nargo_cli::cli::compile_cmd::compile_workspace_full;
 use nargo_toml::resolve_workspace_from_toml;
 use noir_artifact_cli::{Artifact, fs::inputs::read_inputs_from_file};
-use noirc_driver::{CompileOptions, CompiledProgram, NOIR_ARTIFACT_VERSION_STRING};
+use noirc_artifacts::program::CompiledProgram;
+use noirc_driver::{CompileOptions, NOIR_ARTIFACT_VERSION_STRING};
 
 fn run_execution_test_failure(nargo_toml_path: &str) {
     let cargo_manifest_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
