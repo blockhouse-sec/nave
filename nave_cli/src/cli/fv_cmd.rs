@@ -17,7 +17,7 @@ use acir_checker::{
     check_program,
     check_execution as check_execution_func,
 };
-use acvm::acir::{brillig, circuit::AcirOpcodeLocation};
+use acvm::acir::circuit::AcirOpcodeLocation;
 use nargo::{
     package::Package,
     workspace::Workspace,
@@ -385,7 +385,7 @@ fn display_verify_result(
     writer.reset()?;
     write!(writer, "] Checked ")?;
     writer.set_color(ColorSpec::new().set_fg(Some(Color::Blue)))?;
-    write!(writer, "{func_name} ...\n")?;
+    write!(writer, "{func_name} \n")?;
     writer.reset()?;
     writer.flush()?;
 
@@ -395,7 +395,13 @@ fn display_verify_result(
             writer.set_color(ColorSpec::new().set_fg(Some(Color::Green)))?;
             writeln!(writer, "All assertions verified")?;
             writer.reset()?;
+            write!(writer, "\n[")?;
+            writer.set_color(ColorSpec::new().set_fg(Some(Color::Blue)))?;
+            write!(writer, "{}", package_name)?;
+            writer.reset()?;
+            writeln!(writer, "]")?;
             writer.flush()?;
+
             return Ok(())
         }
     }
@@ -482,7 +488,11 @@ fn display_verify_result(
         }
     }
 
+    write!(writer, "\n[")?;
+    writer.set_color(ColorSpec::new().set_fg(Some(Color::Blue)))?;
+    write!(writer, "{}", package_name)?;
     writer.reset()?;
+    writeln!(writer, "]")?;
     writer.flush()?;
 
     Ok(())

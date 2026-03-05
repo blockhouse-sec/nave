@@ -1,4 +1,4 @@
-# Formally verifying Rock-Paper-Scissors (RPS) in NAVE
+# Formally verifying Rock-Paper-Scissors (RPS) in NAVe
 
 ## Why RPS in Zero Knowledge?
 

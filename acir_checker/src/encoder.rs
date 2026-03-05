@@ -4,7 +4,8 @@ use std::{
     collections::HashMap, marker::PhantomData, str::FromStr, u32
 };
 use acir::{
-    AcirField, circuit::{
+    AcirField,
+    circuit::{
         Circuit,
         brillig::{
             BrilligFunctionId, 
@@ -19,9 +20,11 @@ use acir::{
             FunctionInput, 
             MemOp,
         },
-    }, native_types::{
+    },
+    native_types::{
         Expression, 
-        Witness, WitnessMap,
+        Witness,
+        WitnessMap,
     }
 };
 use num_bigint::{BigInt, BigUint};
