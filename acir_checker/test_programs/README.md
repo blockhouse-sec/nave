@@ -8,6 +8,8 @@ We have removed:
 - brillig_entry_points_shared_recursive
 - mutually_recursive_simple_functions
 - regression_10238 (missing argument on Prover.toml)
+- regression_9904
+- shl_signed_regression_9592
 - simple_infinite_recursive_function
 - simple_infinite_recursive_lambda
 - workspace_fail
