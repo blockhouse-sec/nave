@@ -54,9 +54,27 @@ impl Default for BackendType {
     }
 }
 
-// The second item of the tuple identifies brillig call opcode location of
-// verification condition
-type VerifyOutput = (Output, usize);
+#[derive(Debug)]
+pub struct VerifyResult {
+    // The second item of the tuple identifies brillig call opcode location of
+    // verification condition
+    solver_output: Vec<(Output, usize)>,
+
+    // The first item of the tuple identifies witness ID of the variable to print, 
+    // and the second item identifies brillig call opcode location of the verify
+    // print statement.
+    print_locs: Vec<(u32, usize)>,
+}
+
+impl VerifyResult {
+    pub fn solver_output(&self) -> &[(Output, usize)] {
+        &self.solver_output
+    }
+
+    pub fn print_locs(&self) -> &[(u32, usize)] {
+        &self.print_locs
+    }
+}
 
 fn create_solver(backend: BackendType) -> Solver {
     match backend {
@@ -86,19 +104,19 @@ pub fn check_program(
     brillig_names: Vec<String>,
     backend: BackendType,
     strict: bool,
-) -> Result<Vec<VerifyOutput>, Error> {
+) -> Result<VerifyResult, Error> {
     let mut solver = create_solver(backend);
     let mut brillig_funcs: HashMap<u32, String> = HashMap::new();
     for (fn_index, name) in brillig_names.clone().into_iter().enumerate() {
         brillig_funcs.insert(fn_index as u32, name);
     }
-    let ver_conds = {
+    let (ver_conds, print_locs) = {
         let use_int = use_int(backend);
         let next_witness_index = num_vars(circuit);
         let mut translator =
             Translator::new(&mut solver, brillig_funcs, next_witness_index, use_int, strict);
         translator.translate_to_smt(circuit)?;
-        translator.ver_conds()
+        (translator.ver_conds(), translator.print_locs())
     };
     let mut outputs = Vec::new();
     for (actlit_name, call_loc) in ver_conds {
@@ -109,7 +127,10 @@ pub fn check_program(
         }
         outputs.push((output, call_loc));
     }
-    Ok(outputs)
+    Ok(VerifyResult {
+        solver_output: outputs,
+        print_locs,
+    })
 }
 
 pub fn check_execution(

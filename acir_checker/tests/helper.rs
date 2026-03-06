@@ -5,7 +5,7 @@ use std::path::Path;
 use acir_checker::{
     BackendType, 
     Error, 
-    Output, 
+    VerifyResult, 
     check_program
 };
 
@@ -43,10 +43,12 @@ pub(crate) fn is_verified(
     backend: BackendType,
     strict: bool
 ) -> bool {
-    compile_and_check(source, backend, strict)
+   compile_and_check(source, backend, strict)
         .unwrap()
         .into_iter()
-        .all(|(output, _)| output.is_verified())
+        .all(|result| 
+            result.solver_output().into_iter().all(|(output, _)| output.is_verified())
+        )
 }
 
 #[allow(unused)]
@@ -58,7 +60,9 @@ pub(crate) fn is_falsified(
     compile_and_check(source, backend, strict)
         .unwrap()
         .into_iter()
-        .all(|(output, _)| output.is_falsified())
+        .all(|result| 
+            result.solver_output().into_iter().all(|(output, _)| output.is_falsified())
+        )
 }
 
 #[allow(unused)]
@@ -76,14 +80,18 @@ pub(crate) fn no_ver_asserts(
     backend: BackendType,
     strict: bool
 ) -> bool {
-    compile_and_check(source, backend, strict).unwrap().is_empty()
+    compile_and_check(source, backend, strict).unwrap()
+        .into_iter()
+        .all(|result| 
+            result.solver_output().is_empty()
+        )
 }
 
 pub(crate) fn compile_and_check(
     source: &str,
     backend: BackendType,
     strict: bool,
-) -> Result<Vec<(Output, usize)>, Error> {
+) -> Result<Vec<VerifyResult>, Error> {
     let comp_programs = compile_noir_source_from_string(source);
 
     let mut result = Vec::new();
@@ -91,7 +99,7 @@ pub(crate) fn compile_and_check(
     for program in comp_programs {
         let circuit = program.program.functions.first().unwrap();
         let brillig_names = program.program.unconstrained_functions.iter().map(|f| f.function_name.clone()).collect();
-        result.extend(check_program(circuit, brillig_names, backend, strict)?);
+        result.push(check_program(circuit, brillig_names, backend, strict)?);
     }
     Ok(result)
 }

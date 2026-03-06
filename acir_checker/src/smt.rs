@@ -1,7 +1,10 @@
 //! Types for SMT encoding
 
 use anyhow::Error;
-use std::collections::HashMap;
+use std::{
+    collections::HashMap, 
+    fmt::Display
+};
 use rsmt2::print::{
     Expr2Smt, 
     Sort2Smt,
@@ -259,6 +262,16 @@ impl Expr2Smt for Value {
     }
 }
 
+impl Display for Value {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Value::Bool(b) => write!(f, "{}", if *b { "true" } else { "false" }),
+            Value::Int(i) => write!(f, "{}", i),
+            Value::FField(ff) => write!(f, "{}", ff),
+        }
+    }
+}
+
 #[derive(Debug)]
 pub enum SolverOutput {
     Sat,
@@ -283,6 +296,7 @@ impl Solver {
         let rsmt = rsmt2::Solver::new(conf, ()).unwrap();
         Self { rsmt, prime }
     }
+
     fn new(prime: &'static str) -> Self {
         Self::new_with_options(prime, vec![])
     }
@@ -333,6 +347,7 @@ impl Solver {
     pub fn push(&mut self) {
         self.rsmt.push(1).unwrap();
     }
+    
     pub fn pop(&mut self) {
         self.rsmt.pop(1).unwrap();
     }

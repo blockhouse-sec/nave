@@ -14,16 +14,17 @@ use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 use acir_checker::{
     BackendType, 
     Output, 
+    VerifyResult, 
+    check_execution as check_execution_func, 
     check_program,
-    check_execution as check_execution_func,
 };
 use acvm::acir::circuit::AcirOpcodeLocation;
 use nargo::{
-    package::Package,
-    workspace::Workspace,
     insert_all_files_for_workspace_into_file_manager, 
+    package::Package, 
     parse_all, 
-    prepare_package
+    prepare_package, 
+    workspace::Workspace,
 };
 use nargo_toml::PackageSelection;
 use noir_artifact_cli::{
@@ -77,8 +78,8 @@ struct FormalVerifyOptions {
     #[clap(long, default_value = "false")]
     pub check_execution: bool,
 
-    #[clap(long, default_value = "false")]
-    pub verbose: bool,
+    #[clap(long, value_enum, default_value = "quiet")]
+    pub verbose: Verbosity,
 }
 
 #[derive(Clone, Copy, Debug, Default)]
@@ -106,6 +107,32 @@ impl ValueEnum for BackendOption {
             BackendType::Int => {
                 Some(clap::builder::PossibleValue::new("int").help("Integer backend"))
             }
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+enum Verbosity {
+    #[default]
+    Quiet,
+    Info,
+    Debug,
+}
+
+impl ValueEnum for Verbosity {
+    fn value_variants<'a>() -> &'a [Self] {
+        &[
+            Verbosity::Quiet,
+            Verbosity::Info,
+            Verbosity::Debug,
+        ]
+    }
+
+    fn to_possible_value(&self) -> Option<clap::builder::PossibleValue> {
+        match self {
+            Verbosity::Quiet => Some(clap::builder::PossibleValue::new("quiet")),
+            Verbosity::Info => Some(clap::builder::PossibleValue::new("info")),
+            Verbosity::Debug => Some(clap::builder::PossibleValue::new("debug")),
         }
     }
 }
@@ -250,11 +277,11 @@ fn run_formal_harness(
 ) -> Result<(), CliError> {
     let backend = args.formal_verify_options.backend.0;
     let strict = !args.formal_verify_options.relaxed;
-    let is_verbose = args.formal_verify_options.verbose;
+    let verbose_level = args.formal_verify_options.verbose;
 
     let circuit = compiled_program.program.functions.first().unwrap();
     let brillig_names = compiled_program.program.unconstrained_functions.iter().map(|f| f.function_name.clone()).collect();
-    let outputs = check_program(circuit, brillig_names, backend, strict).map_err(|e| {
+    let output = check_program(circuit, brillig_names, backend, strict).map_err(|e| {
         CliError::Generic(format!(
             "Failed to check program for package {}: {}",
             package.name, e
@@ -266,8 +293,8 @@ fn run_formal_harness(
             &compiled_program, 
             &package.name.to_string(), 
             func_name,
-            &outputs,
-            is_verbose
+            &output,
+            verbose_level
         ).map_err(|e| {
             CliError::Generic(format!(
                 "Failed to display verification results {}: {}",
@@ -278,19 +305,24 @@ fn run_formal_harness(
     Ok(())
 }
 
-// Get verification condition from the source program given `Location` of the
-// condition from debug information
-fn get_cond_from(location: Location, program: &CompiledProgram) -> Option<String> {
-    let span = location.span;
+// Get source program given a particular `Location` from debug information, and ACIR 
+// compiled program
+fn source_program_from(location: Location, program: &CompiledProgram) -> Option<String> {
     let file_id = location.file;
     let debug_file = program.file_map.get(&file_id)?;
-    let prog_source = &debug_file.source;
-    let (line, column) = line_and_column_from(&span, prog_source,);
-    extract_expr(line, column, prog_source)
+    Some(debug_file.source.clone())
+}
+
+// Get verification condition from the source program given `Location` of the
+// condition from debug information
+fn get_source_cond_from(location: Location, program: &CompiledProgram) -> Option<String> {
+    let source = source_program_from(location, program)?;
+    let (line, column) = line_and_column_from(&location.span, &source);
+    extract_expr(line, column, &source)
 }
 
 // Extract verification condition from the source program given line number and 
-// column
+// column number of the condition in the source program
 fn extract_expr(line_num: u32, col: u32, source: &str) -> Option<String> {
     let verify_cond_line = source
         .lines() // iterator over lines
@@ -309,7 +341,7 @@ fn extract_expr(line_num: u32, col: u32, source: &str) -> Option<String> {
     (cond_start < cond_end).then(|| stmt_substr[cond_start + 1..cond_end].to_string())
 }
 
-// Utility function to get line number and column from `Span`
+// Utility function to get line number and column from `Span`, and string source of the program
 fn line_and_column_from(span: &Span, source: &str) -> (u32, u32) {
     let mut line = 1;
     let mut column = 0;
@@ -372,8 +404,8 @@ fn display_verify_result(
     compiled_program: &CompiledProgram,
     package_name: &str,
     func_name: &str,
-    fv_result: &Vec<(Output, usize)>,
-    is_verbose: bool,
+    fv_result: &VerifyResult,
+    verbose_level: Verbosity,
 ) -> Result<(), io::Error> {
     let writer = StandardStream::stderr(ColorChoice::Always);
     let mut writer = writer.lock();
@@ -389,8 +421,10 @@ fn display_verify_result(
     writer.reset()?;
     writer.flush()?;
 
-    if !is_verbose {
-        let is_verified = fv_result.iter().all(|(output, _)| output.is_verified());
+    let solver_output = fv_result.solver_output();
+
+    if verbose_level == Verbosity::Quiet {
+        let is_verified = solver_output.iter().all(|(output, _)| output.is_verified());
         if is_verified {
             writer.set_color(ColorSpec::new().set_fg(Some(Color::Green)))?;
             writeln!(writer, "All assertions verified")?;
@@ -409,7 +443,7 @@ fn display_verify_result(
     let acir_locations = &compiled_program.debug[0].acir_locations;
     let location_tree = &compiled_program.debug[0].location_tree;
 
-    for (output, call_loc) in fv_result {
+    for (output, call_loc) in solver_output {
         // Placeholder value for the verification condition
         let mut condition = "<-->".to_string();
 
@@ -419,7 +453,7 @@ fn display_verify_result(
             Some(call_stack_id) => {
                 let locations = location_tree.get_call_stack(*call_stack_id);
                 if !locations.is_empty() {
-                    if let Some(c) = get_cond_from(locations[0], &compiled_program) {
+                    if let Some(c) = get_source_cond_from(locations[0], &compiled_program) {
                         condition = c;
                     }
                 }
@@ -427,9 +461,9 @@ fn display_verify_result(
             None => {}
         };
 
-        if !is_verbose {
+        if verbose_level == Verbosity::Quiet {
             if output.is_falsified() {
-                write!(writer, "Assert ")?;
+                write!(writer, "\nAssert ")?;
                 writer.set_color(ColorSpec::new().set_fg(Some(Color::Blue)))?;
                 write!(writer, "\"{}\" : ", condition)?;
                 writer.set_color(ColorSpec::new().set_fg(Some(Color::Red)))?;
@@ -437,7 +471,7 @@ fn display_verify_result(
                 writer.reset()?;
             }
         } else {
-            write!(writer, "Assert ")?;
+            write!(writer, "\nAssert ")?;
             writer.set_color(ColorSpec::new().set_fg(Some(Color::Blue)))?;
             write!(writer, "\"{}\" : ", condition)?;
             
@@ -446,18 +480,22 @@ fn display_verify_result(
                     writer.set_color(ColorSpec::new().set_fg(Some(Color::Red)))?;
                     writeln!(writer, "Falsified")?;
                     writer.reset()?;
-                    writeln!(writer, "Model---\n[\"{:?}\"]", model)?;
+
+                    if Verbosity::Debug == verbose_level {
+                        writeln!(writer, "\nModel---\n[\"{:?}\"]", model)?;
+                    }
                     
                     // Print input parameters and values (if any)
                     let param_names = compiled_program.abi.parameter_names();
 
                     if !param_names.is_empty() {
                         let witness_ids_iter = compiled_program.program.functions[0].private_parameters.iter();
-                        writeln!(writer, "\nFunction parameters (name, witness_id, and value)---")?;
+                        writeln!(writer, "\nFunction parameters (name: value) ---")?;
                         for (name, id) in param_names.iter().zip(witness_ids_iter) {
                             let id_str = id.to_string();
-                            let val = model.get(&id_str);
-                            writeln!(writer, "{name}: {} -> {:?}", id_str, val)?;
+                            if let Some(val) = model.get(&id_str) {
+                                writeln!(writer, "{name}: {val}")?;
+                            }
                         }
                     }
                     
@@ -467,11 +505,39 @@ fn display_verify_result(
                     let return_vals = &compiled_program.program.functions[0].return_values.0;
 
                     if !return_vals.is_empty() {
-                        writeln!(writer, "\nReturn values (witness_id, and value)---")?;
+                        writeln!(writer, "\nReturn value(s) ---")?;
                         for id in return_vals {
                             let id_str = id.to_string();
-                            let val = model.get(&id_str);
-                            writeln!(writer, "{} -> {:?}", id_str, val)?;
+                            if let Some(val) = model.get(&id_str) {
+                                writeln!(writer, "{val}")?;
+                            }
+                        }
+                    }
+
+                    let verify_print_locs = fv_result.print_locs();
+                    if !verify_print_locs.is_empty() {
+                        writeln!(writer, "\nverify_print variables (name: value)---")?;
+                        for (witness_id, print_loc) in verify_print_locs {
+                            // Tries to get source program location (and then print verification statement 
+                            // variable name and value) using debug information
+                            match acir_locations.get(&AcirOpcodeLocation::new(*print_loc)) {
+                                Some(call_stack_id) => {
+                                    let locations = location_tree.get_call_stack(*call_stack_id);
+                                    if !locations.is_empty() {
+                                        if let Some(source) = source_program_from(locations[0], compiled_program) {
+                                            let (line, col) = line_and_column_from(&locations[0].span, &source);
+                                            let var_name = extract_expr(line, col, &source).unwrap_or_else(|| "<-->".to_string());
+                                            let id_str = format!("w{}", witness_id);
+                                            if let Some(val) = model.get(&id_str) {
+                                                writeln!(writer, "\nAt line {}: ", line)?;
+                                                writeln!(writer, "{var_name}: {val}")?;
+
+                                            }
+                                        }
+                                    }
+                                },
+                                None => {}
+                            };
                         }
                     }
                 }

@@ -51,6 +51,11 @@ pub(crate) struct Translator<'a, F: AcirField> {
     // specifies the location of the Brillig call opcode corresponding to the
     // verification assert.
     ver_conds: Vec<(String, usize)>,
+
+    // The first element of the tuple specifies the witness ID of the variable to print, 
+    //and the second element specifies the location of the Brillig call opcode 
+    // corresponding to the verify print statement.
+    print_locs: Vec<(u32, usize)>,
     _f: PhantomData<F>,
 }
 
@@ -77,6 +82,7 @@ impl<'a, F: AcirField> Translator<'a, F> {
             use_int,
             strict,
             ver_conds: Vec::new(),
+            print_locs: Vec::new(),
             _f: PhantomData,
         }
     }
@@ -453,16 +459,15 @@ impl<'a, F: AcirField> Translator<'a, F> {
         opcode_loc: usize,
         id: BrilligFunctionId,
         inputs: &[BrilligInputs<F>],
-        _outputs: &[BrilligOutputs],
+        outputs: &[BrilligOutputs],
         predicate: &Expression<F>,
     ) -> Result<(), Error> {
         // predicate indicates if brillig call should be skipped
         if let Some(func_name) = self.brillig_funcs.get(&id.0) {
             return match func_name.as_str() {
                 ASSERT_FUNC_NAME => self.translate_verify_assert(opcode_loc, inputs, predicate),
-                // PRECONDITION_FUNC_NAME => self.translate_verify_precondition(inputs),
-                // POSTCONDITION_FUNC_NAME => self.translate_verify_postcondition(inputs),
                 ASSUME_FUNC_NAME => self.translate_verify_assume(opcode_loc, inputs, predicate),
+                PRINT_FUNC_NAME => self.translate_verify_print(opcode_loc, outputs),
                 _ => Ok(())
             }
         }
@@ -593,31 +598,23 @@ impl<'a, F: AcirField> Translator<'a, F> {
         Ok(())
     }
 
-    // fn translate_verify_precondition(&mut self, inputs: &[BrilligInputs<F>]) {
-    //     for input in inputs {
-    //         match input {
-    //             BrilligInputs::Single(exp) => {
-    //                 let _ = self.translate_assert_one(exp);
-    //             }
-    //             _ => {
-    //                 unimplemented!("assume should be simple expression")
-    //             }
-    //         }
-    //     }
-    // }
-
-    // fn translate_verify_postcondition(&mut self, inputs: &[BrilligInputs<F>]) {
-    //     for input in inputs {
-    //         match input {
-    //             BrilligInputs::Single(exp) => {
-    //                 let _ = self.translate_assert_zero(exp);
-    //             }
-    //             _ => {
-    //                 unimplemented!("assume should be simple expression")
-    //             }
-    //         }
-    //     }
-    // }
+    fn translate_verify_print(
+        &mut self, 
+        opcode_loc: usize,
+        outputs: &[BrilligOutputs],
+    ) -> Result<(), Error> {
+        if outputs.len() != 1 {
+            return Err(Error::EncodingError(
+                "verify_print should have exactly one output".to_string(),
+            ));
+        }
+        let witness_id: u32 = match &outputs[0] {
+            BrilligOutputs::Simple(wit) => wit.0,
+            BrilligOutputs::Array(wits) => wits[0].0,
+        };
+        self.print_locs.push((witness_id, opcode_loc));
+        Ok(())
+    }
 
     fn translate_call(
         &self,
@@ -837,6 +834,10 @@ impl<'a, F: AcirField> Translator<'a, F> {
     pub(crate) fn ver_conds(&self) -> Vec<(String, usize)> {
         self.ver_conds.clone()
     }
+
+    pub(crate) fn print_locs(&self) -> Vec<(u32, usize)> {
+        self.print_locs.clone()
+    }
 }
 
 pub(crate) fn num_vars<F: AcirField>(circuit: &Circuit<F>) -> u32 {
@@ -859,7 +860,7 @@ fn actlit_name(index: u32) -> String {
 }
 
 fn witness_name(wit: Witness) -> String {
-    format!("_{}", wit.0)
+    format!("w{}", wit.0)
 }
 
 fn element_value<F: AcirField>(element: F) -> String {
@@ -870,7 +871,5 @@ const ASSERT_FUNC_NAME: &str = "verify_assert";
 
 const ASSUME_FUNC_NAME: &str = "verify_assume";
 
-// const PRECONDITION_FUNC_NAME: &str = "verify_pre";
-
-// const POSTCONDITION_FUNC_NAME: &str = "verify_post";
+const PRINT_FUNC_NAME: &str = "verify_print";
 

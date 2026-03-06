@@ -17,6 +17,8 @@ fn round(x: Field, y: Field) -> Field {
 
 fn main(x: Field, y: Field) -> pub Field {
     let result = round(x, y);
+    
+    unsafe { verify_print(result); }
 
     unsafe { verify_assert((result == 0) | (result == 3) | (result == 6)); }
 
@@ -44,10 +46,18 @@ fn main(x: Field, y: Field) -> pub Field {
 #[formal]
 fn two_rps_rounds(x: Field, y: Field) -> Field {
     let result_1 = round(x, y);
+
+    unsafe { verify_assert((result_1 == 0) | (result_1 == 1)); }
+    unsafe { verify_print(result_1); }
+
     let result_2 = round(y, x);
+
+    unsafe { verify_print(result_2); }
     unsafe { verify_assert((result_1 == 0) | (result_2 == 0) | (result_2 == 6)); }
 
     result_1 + result_2
 }
 
-unconstrained fn verify_assert(b: bool) { assert(false); }
+unconstrained fn verify_assert(b: bool) { assert(b); }
+
+unconstrained fn verify_print<T>(value: T) -> T { value }
