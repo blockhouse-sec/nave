@@ -339,8 +339,8 @@ impl<'a, F: AcirField> Translator<'a, F> {
         black_box_func_call: &BlackBoxFuncCall<F>,
     ) -> Result<(), Error> {
         match black_box_func_call {
-            BlackBoxFuncCall::AND { .. } => {
-                Err(Error::EncodingError("AND black box function is not supported".to_string()))
+            BlackBoxFuncCall::AND { lhs, rhs, num_bits, output } => {
+                self.translate_and(lhs, rhs, *num_bits, output)
             }
             BlackBoxFuncCall::XOR { .. } => {
                 Err(Error::EncodingError("XOR black box function is not supported".to_string()))
@@ -716,6 +716,119 @@ impl<'a, F: AcirField> Translator<'a, F> {
         self.solver.assert(minus_one.lt(wit.clone()));
         let value = self.new_element_int(F::from(length));
         self.solver.assert(wit.lt(value));
+    }
+
+    fn translate_and(
+        &mut self,
+        lhs: &FunctionInput<F>,
+        rhs: &FunctionInput<F>,
+        num_bits: u32,
+        output: &Witness,
+    ) -> Result<(), Error> {
+        let lhs_witness = match lhs {
+            FunctionInput::Witness(w) => *w,
+            FunctionInput::Constant(_) => {
+                return Err(Error::EncodingError(
+                    "Constant input to AND is not supported".to_string(),
+                ));
+            }
+        };
+        let rhs_witness = match rhs {
+            FunctionInput::Witness(w) => *w,
+            FunctionInput::Constant(_) => {
+                return Err(Error::EncodingError(
+                    "Constant input to AND is not supported".to_string(),
+                ));
+            }
+        };
+        if self.use_int {
+            self.encode_and_int(lhs_witness, rhs_witness, num_bits, *output);
+        } else {
+            self.encode_and_ff(lhs_witness, rhs_witness, num_bits, *output);
+        }
+        Ok(())
+    }
+
+    // AND via bit decomposition in the finite-field backend.
+    // Encodes: output = ff.bitsum(lhs_bits[i] * rhs_bits[i])
+    fn encode_and_ff(&mut self, lhs: Witness, rhs: Witness, num_bits: u32, output: Witness) {
+        if num_bits == 0 {
+            let out = self.new_const(output);
+            let zero = self.zero();
+            self.solver.assert(out.eq(zero));
+            return;
+        }
+        let lhs_bits = self.encode_bitsum(lhs, num_bits as usize);
+        let rhs_bits = self.encode_bitsum(rhs, num_bits as usize);
+        // AND of two boolean field elements is their product.
+        let and_bits: Vec<FField> = (0..num_bits as usize)
+            .map(|i| lhs_bits[i].clone().mul(rhs_bits[i].clone()))
+            .collect();
+        let and_val = if num_bits == 1 {
+            and_bits.into_iter().next().unwrap()
+        } else {
+            FField::rbitsum(and_bits)
+        };
+        let out = self.new_const(output);
+        self.solver.assert(out.eq(and_val));
+    }
+
+    // AND via bit decomposition in the integer backend.
+    // Encodes: output = sum_{i} 2^i * (lhs_bits[i] * rhs_bits[i])
+    fn encode_and_int(&mut self, lhs: Witness, rhs: Witness, num_bits: u32, output: Witness) {
+        if num_bits == 0 {
+            let out = self.new_const_int(output);
+            let zero = self.zero_int();
+            self.solver.assert(out.eq(zero));
+            return;
+        }
+        let lhs_bits = self.encode_bitsum_int(lhs, num_bits as usize);
+        let rhs_bits = self.encode_bitsum_int(rhs, num_bits as usize);
+        let mut terms: Vec<Int> = lhs_bits
+            .iter()
+            .zip(rhs_bits.iter())
+            .enumerate()
+            .map(|(i, (l, r))| {
+                let coeff = BigUint::from(2u32).pow(i as u32);
+                Int::rmul(vec![Int::new_value(&coeff.to_string()), l.clone().mul(r.clone())])
+            })
+            .collect();
+        let and_val = if terms.len() == 1 { terms.remove(0) } else { Int::radd(terms) };
+        let out = self.new_const_int(output);
+        self.solver.assert(out.eq(and_val));
+    }
+
+    // Decomposes `witness` into `num_bits` boolean integer witnesses and
+    // constrains `witness = sum(2^i * bits[i])`. Returns the bit witnesses.
+    fn encode_bitsum_int(&mut self, witness: Witness, num_bits: usize) -> Vec<Int> {
+        let mut bits = Vec::with_capacity(num_bits);
+        for _ in 0..num_bits {
+            bits.push(self.new_witness_int_bool());
+        }
+        let mut terms: Vec<Int> = bits
+            .iter()
+            .enumerate()
+            .map(|(i, b)| {
+                let coeff = BigUint::from(2u32).pow(i as u32);
+                Int::rmul(vec![Int::new_value(&coeff.to_string()), b.clone()])
+            })
+            .collect();
+        let sum = if terms.len() == 1 { terms.remove(0) } else { Int::radd(terms) };
+        let wit = self.new_const_int(witness);
+        self.solver.assert(wit.eq(sum));
+        bits
+    }
+
+    // Declares a fresh integer witness constrained to {0, 1}.
+    fn new_witness_int_bool(&mut self) -> Int {
+        let new_wit = Witness(self.next_witness_index);
+        let new_wit_name = witness_name(new_wit);
+        self.next_witness_index += 1;
+        self.solver.declare_const(&new_wit_name, Type::Int);
+        let wit = Int::new_const(&new_wit_name);
+        self.solver.assert(Self::minus_one_int().lt(wit.clone()));
+        self.solver.assert(wit.clone().lt(Int::new_value("2")));
+        wit
     }
 
     // This encode the expression witness = \sum^{num_bits}_{i=0} 2^i * out[i];
