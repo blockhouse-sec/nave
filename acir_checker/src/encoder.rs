@@ -45,7 +45,7 @@ pub(crate) struct Translator<'a, F: AcirField> {
     next_witness_index: u32,
     use_int: bool,
     strict: bool,
-    range_opts: RangeOpts,
+    range_opts: Option<RangeOpts>,
     // The first element of the tuple specifies the name of the conditional literal
     // that holds the result of the verification assert. The second element
     // specifies the location of the Brillig call opcode corresponding to the
@@ -73,7 +73,7 @@ impl<'a, F: AcirField> Translator<'a, F> {
         next_witness_index: u32,
         use_int: bool,
         strict: bool,
-        range_opts: RangeOpts,
+        range_opts: Option<RangeOpts>,
     ) -> Translator<'a, F> {
         assert!(solver.prime() == F::modulus().to_string());
         Translator {
@@ -634,20 +634,25 @@ impl<'a, F: AcirField> Translator<'a, F> {
 
     fn translate_range(&mut self, input: &FunctionInput<F> , mut num_bits: u32) {
         // TODO: optimise to combine all ranges over the same variable
-        if let Some(num_range_limit) = self.range_opts.limit {
-            num_bits = num_range_limit;
-        }
-
-        match input {
-            FunctionInput::Constant(_) => {
-                println!("unimplemented constant input");
-                return;
+        if let Some(RangeOpts {limit, ..}) = self.range_opts {
+            if let Some(limit) = limit {
+                if num_bits > limit {
+                    num_bits = limit;
+                }
             }
-            FunctionInput::Witness(witness) => {
-                if self.use_int {
-                    self.translate_range_int(*witness, num_bits);
-                } else {
-                    self.translate_range_ff(*witness, num_bits);
+        
+
+            match input {
+                FunctionInput::Constant(_) => {
+                    println!("unimplemented constant input");
+                    return;
+                }
+                FunctionInput::Witness(witness) => {
+                    if self.use_int {
+                        self.translate_range_int(*witness, num_bits);
+                    } else {
+                        self.translate_range_ff(*witness, num_bits);
+                    }
                 }
             }
         }
@@ -676,7 +681,7 @@ impl<'a, F: AcirField> Translator<'a, F> {
             self.solver.assert(wit.eq(zero));
             return;
         }
-        match self.range_opts.kind  {
+        match self.range_opts.unwrap().kind  {
             crate::RangeEncodingKind::BitDecomposition => {
                 self.encode_bitsum(witness, num_bits as usize);
             }

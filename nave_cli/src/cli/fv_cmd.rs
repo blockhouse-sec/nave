@@ -56,6 +56,9 @@ struct FormalVerifyOptions {
     pub range_limit: Option<u32>,
 
     #[clap(long, default_value = "false")]
+    pub no_range: bool,
+
+    #[clap(long, default_value = "false")]
     pub relaxed: bool,
 
     #[clap(long, default_value = "false")]
@@ -63,6 +66,9 @@ struct FormalVerifyOptions {
 
     #[clap(long, value_enum, default_value = "quiet")]
     pub verbose: Verbosity,
+
+    #[clap(long, default_value = "false")]
+    pub debug_smt_file: bool,
 }
 
 #[derive(Clone, Copy, Debug, Default)]
@@ -267,6 +273,13 @@ fn run_formal_harness(
         args.formal_verify_options.range_limit,
         args.formal_verify_options.range_kind.0,
     );
+    let range_opts = if !args.formal_verify_options.no_range {
+        Some(range_opts)
+    } else {
+        None
+    };
+    let debug_smt_file = args.formal_verify_options.debug_smt_file;
+
 
     let circuit = compiled_program.program.functions.first().unwrap();
     let brillig_names = compiled_program
@@ -276,7 +289,7 @@ fn run_formal_harness(
         .map(|f| f.function_name.clone())
         .collect();
     let output =
-        check_program(circuit, brillig_names, backend, strict, range_opts).map_err(|e| {
+        check_program(circuit, brillig_names, backend, strict, range_opts, debug_smt_file).map_err(|e| {
             CliError::Generic(format!(
                 "Failed to check program for package {}: {}",
                 package.name, e

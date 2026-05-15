@@ -96,7 +96,7 @@ pub(crate) fn compile_and_check(
     for program in comp_programs {
         let circuit = program.program.functions.first().unwrap();
         let brillig_names = program.program.unconstrained_functions.iter().map(|f| f.function_name.clone()).collect();
-        result.push(check_program(circuit, brillig_names, backend, strict, RangeOpts::default())?);
+        result.push(check_program(circuit, brillig_names, backend, strict, Some(RangeOpts::default()), false)?);
     }
     Ok(result)
 }

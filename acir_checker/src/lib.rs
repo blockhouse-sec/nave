@@ -76,11 +76,11 @@ impl VerifyResult {
     }
 }
 
-fn create_solver(backend: BackendType) -> Solver {
+fn create_solver(backend: BackendType, debug_smt_file: bool) -> Solver {
     match backend {
-        BackendType::FfGb => Solver::new_ff_gb(PRIME),
-        BackendType::FfSplit => Solver::new_ff_split(PRIME),
-        BackendType::Int => Solver::new_int(PRIME),
+        BackendType::FfGb => Solver::new_ff_gb(PRIME, debug_smt_file),
+        BackendType::FfSplit => Solver::new_ff_split(PRIME,debug_smt_file),
+        BackendType::Int => Solver::new_int(PRIME,debug_smt_file),
     }
 }
 
@@ -124,9 +124,10 @@ pub fn check_program(
     brillig_names: Vec<String>,
     backend: BackendType,
     strict: bool,
-    range_opts: RangeOpts,
+    range_opts: Option<RangeOpts>,
+    debug_smt_file: bool,
 ) -> Result<VerifyResult, Error> {
-    let mut solver = create_solver(backend);
+    let mut solver = create_solver(backend, debug_smt_file);
     let mut brillig_funcs: HashMap<u32, String> = HashMap::new();
     for (fn_index, name) in brillig_names.clone().into_iter().enumerate() {
         brillig_funcs.insert(fn_index as u32, name);
@@ -161,7 +162,7 @@ pub fn check_execution(
     strict: bool,
     solver_options: &Vec<(String, String)>,
 ) -> Result<Output, Error> {
-    let mut solver = create_solver(backend);
+    let mut solver = create_solver(backend, false);
     for (key, value) in solver_options {
         solver.set_option(key, value);
     }
@@ -170,7 +171,7 @@ pub fn check_execution(
     let use_int = use_int(backend);
     let next_witness_index = num_vars(circuit);
     let mut translator =
-        Translator::new(&mut solver, brillig_funcs, next_witness_index, use_int, strict, RangeOpts::default());
+        Translator::new(&mut solver, brillig_funcs, next_witness_index, use_int, strict, Some(RangeOpts::default()));
     translator.translate_to_smt(circuit)?;
     translator.translate_witness_map(witness_map)?;
 

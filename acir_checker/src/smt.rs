@@ -3,7 +3,7 @@
 use anyhow::Error;
 use std::{
     collections::HashMap, 
-    fmt::Display,
+    fmt::Display, fs::File
 };
 use rsmt2::print::{
     Expr2Smt, 
@@ -285,7 +285,7 @@ pub struct Solver {
 }
 
 impl Solver {
-    fn new_with_options(prime: &'static str, options: Vec<&'static str>) -> Self {
+    fn new_with_options(prime: &'static str, options: Vec<&'static str>, debug_smtlib_file: bool) -> Self {
         let mut conf = rsmt2::SmtConf::cvc5("cvc5");
         conf.models();
         conf.incremental();
@@ -293,28 +293,26 @@ impl Solver {
         for option in options {
             conf.option(option);
         }
-        let rsmt = rsmt2::Solver::new(conf, ()).unwrap();
-
-        // Uncomment the following two lines, and make `rsmt` mutable to 
-        // write the SMT queries to a file for debugging
-        // let file = std::fs::File::create("out.smt2").unwrap();
-        // rsmt.tee(file).unwrap();
-
+        let mut rsmt = rsmt2::Solver::new(conf, ()).unwrap();
+        if debug_smtlib_file {
+            let file = File::create("out.smt2").unwrap();
+            rsmt.tee(file).unwrap();
+        }
         Self { rsmt, prime }
     }
 
-    fn new(prime: &'static str) -> Self {
-        Self::new_with_options(prime, vec![])
+    fn new(prime: &'static str, debug_smtlib_file: bool) -> Self {
+        Self::new_with_options(prime, vec![], debug_smtlib_file)
     }
 
-    pub fn new_int(prime: &'static str) -> Self {
-        let mut solver = Self::new(prime);
+    pub fn new_int(prime: &'static str, debug_smtlib_file: bool) -> Self {
+        let mut solver = Self::new(prime, debug_smtlib_file);
         solver.rsmt.set_custom_logic("QF_NIA").unwrap();
         solver
     }
 
-    pub fn new_ff(prime: &'static str, is_split: bool) -> Self {
-        let mut solver = Self::new(prime);
+    pub fn new_ff(prime: &'static str, is_split: bool, debug_smtlib_file: bool) -> Self {
+        let mut solver = Self::new(prime, debug_smtlib_file);
         solver.rsmt.set_custom_logic("QF_FF").unwrap();
         if is_split {
             solver.rsmt.set_option(":ff-solver", "split").unwrap();
@@ -329,12 +327,12 @@ impl Solver {
         self.rsmt.set_option(option, value).unwrap();
     }
 
-    pub fn new_ff_gb(prime: &'static str) -> Self {
-        Self::new_ff(prime, false)
+    pub fn new_ff_gb(prime: &'static str, debug_smtlib_file: bool) -> Self {
+        Self::new_ff(prime, false, debug_smtlib_file)
     }
 
-    pub fn new_ff_split(prime: &'static str) -> Self {
-        Self::new_ff(prime, true)
+    pub fn new_ff_split(prime: &'static str, debug_smtlib_file: bool) -> Self {
+        Self::new_ff(prime, true, debug_smtlib_file)
     }
 
     pub fn assert(&mut self, b_expr: Bool) {
@@ -404,7 +402,7 @@ impl Solver {
 mod tests {
     #[test]
     fn test_solver() {
-        let mut solver = super::Solver::new_ff_gb("13");
+        let mut solver = super::Solver::new_ff_gb("13", false);
         solver.declare_const("x", super::Type::FField);
         solver.declare_const("y", super::Type::FField);
         let x = super::FField::new_const("x");
