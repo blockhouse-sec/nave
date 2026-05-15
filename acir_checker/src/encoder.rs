@@ -30,8 +30,7 @@ use acir::{
 use num_bigint::{BigInt, BigUint};
 
 use crate::{
-    error::Error,
-    smt::{
+    RangeOpts, error::Error, smt::{
         Bool, 
         FField, 
         Int, 
@@ -46,6 +45,7 @@ pub(crate) struct Translator<'a, F: AcirField> {
     next_witness_index: u32,
     use_int: bool,
     strict: bool,
+    range_opts: RangeOpts,
     // The first element of the tuple specifies the name of the conditional literal
     // that holds the result of the verification assert. The second element
     // specifies the location of the Brillig call opcode corresponding to the
@@ -73,6 +73,7 @@ impl<'a, F: AcirField> Translator<'a, F> {
         next_witness_index: u32,
         use_int: bool,
         strict: bool,
+        range_opts: RangeOpts,
     ) -> Translator<'a, F> {
         assert!(solver.prime() == F::modulus().to_string());
         Translator {
@@ -81,6 +82,7 @@ impl<'a, F: AcirField> Translator<'a, F> {
             next_witness_index,
             use_int,
             strict,
+            range_opts,
             ver_conds: Vec::new(),
             print_locs: Vec::new(),
             _f: PhantomData,
@@ -630,8 +632,12 @@ impl<'a, F: AcirField> Translator<'a, F> {
         }
     }
 
-    fn translate_range(&mut self, input: &FunctionInput<F> , num_bits: u32) {
+    fn translate_range(&mut self, input: &FunctionInput<F> , mut num_bits: u32) {
         // TODO: optimise to combine all ranges over the same variable
+        if let Some(num_range_limit) = self.range_opts.limit {
+            num_bits = num_range_limit;
+        }
+
         match input {
             FunctionInput::Constant(_) => {
                 println!("unimplemented constant input");
@@ -641,7 +647,7 @@ impl<'a, F: AcirField> Translator<'a, F> {
                 if self.use_int {
                     self.translate_range_int(*witness, num_bits);
                 } else {
-                    self.translate_range_bitsum(*witness, num_bits);
+                    self.translate_range_ff(*witness, num_bits);
                 }
             }
         }
@@ -663,14 +669,25 @@ impl<'a, F: AcirField> Translator<'a, F> {
         self.solver.assert(wit.lt(value));
     }
 
-    fn translate_range_bitsum(&mut self, witness: Witness, num_bits: u32) {
+    fn translate_range_ff(&mut self, witness: Witness, num_bits: u32) {
         if num_bits == 0 {
             let wit = self.new_const(witness);
             let zero = self.zero();
             self.solver.assert(wit.eq(zero));
             return;
         }
-        self.encode_bitsum(witness, num_bits as usize);
+        match self.range_opts.kind  {
+            crate::RangeEncodingKind::BitDecomposition => {
+                self.encode_bitsum(witness, num_bits as usize);
+            }
+            crate::RangeEncodingKind::BaseDecomposition(base) => {
+                self.encode_basesum(witness, num_bits, base);
+            }
+            crate::RangeEncodingKind::ExplicitValue => {
+                self.encode_range_explicit_values(witness, num_bits);
+            }
+        } 
+        ;
     }
 
     // Create a range constraint witness in [0, length-1]
@@ -850,8 +867,64 @@ impl<'a, F: AcirField> Translator<'a, F> {
     fn encode_bool(&mut self) -> FField {
         let res = self.new_witness();
         let zero = FField::zero();
-        self.solver.assert(res.clone().mul(res.clone().add(Self::minus_one())).eq(zero));
+        // self.solver.assert(res.clone().mul(res.clone().add(Self::minus_one())).eq(zero));
+        self.solver.assert(res.clone().eq(zero).or(res.clone().eq(FField::one())));
+        // self.solver.assert(res.clone().mul(res.clone()).eq(res.clone()));
         res
+    }
+
+    // Create a field constant out such that out in \{0,1}.
+    fn encode_base(&mut self, base: u32) -> FField {
+        let res = self.new_witness();
+        let zero = FField::zero();
+        let mut constraint = vec![res.clone()];
+        constraint.extend((1..base).map(|x| res.clone().add(self.new_element(F::from(x).neg()))));
+        // println!("const: {:?}" , constraint);
+        self.solver.assert(FField::rmul(constraint).eq(zero));
+        res
+    }
+
+    fn encode_basesum(&mut self, witness: Witness, num_bits: u32, base: u32) -> Vec<FField> {
+        let num_bits_per_digit = base.ilog2();
+        let mut res = Vec::new();
+        let mut bits_left = num_bits;
+        let mut base_left = base;
+        let mut sum_constraint = Vec::new();
+        let mut sum_cur_multiplier: F = F::one();
+        while bits_left > 0 {
+            if bits_left < num_bits_per_digit {
+                base_left = 2u32.pow(bits_left);
+                bits_left = 0;
+            } else {
+                bits_left -= num_bits_per_digit;
+            };
+            let out_i = self.encode_base(base_left);
+            let sum_i = self.new_witness();
+            let sum_multiplier = self.new_element(sum_cur_multiplier);
+            self.solver.assert(sum_i.clone().eq(sum_multiplier.mul(out_i.clone())));
+            sum_constraint.push(sum_i);
+            res.push(out_i);
+            sum_cur_multiplier = sum_cur_multiplier *  F::from(base);
+        }
+        // println!("la {:?}", res);
+        let exp = if sum_constraint.len() == 1 { sum_constraint[0].clone() } else { FField::radd(sum_constraint) };
+        let wit = self.new_const(witness);
+        self.solver.assert(wit.eq(exp));
+        res
+    }
+
+    fn encode_range_explicit_values(&mut self, witness: Witness, num_bits: u32) {
+        let limit_int = BigUint::from(2u32).pow(num_bits.into());
+        let wit = self.new_const(witness);
+        let mut mul_operands = vec![wit.clone()];
+        let mut x = BigUint::from(1u32);
+        while x < limit_int {
+            let x_ff = FField::new_value(&format!("-{}",x));
+            mul_operands.push(wit.clone().add(x_ff));
+            x += 1u32;
+        }
+        let zero = self.zero();
+        self.solver.assert(FField::rmul(mul_operands).eq(zero));
     }
 
     fn encode_int_range(&mut self, witness: Witness) {
@@ -886,6 +959,11 @@ impl<'a, F: AcirField> Translator<'a, F> {
         Int::new_value(&element_value)
     }
 
+    #[allow(unused)]
+    fn new_element_big_ff(&mut self, element: BigUint) -> FField {
+        FField::new_value(&element.to_string())
+    }
+
     fn new_element_big_int(&mut self, element: BigUint) -> Int {
         Int::new_value(&element.to_string())
     }
@@ -906,6 +984,7 @@ impl<'a, F: AcirField> Translator<'a, F> {
         Int::one()
     }
 
+    #[allow(unused)]
     fn minus_one() -> FField {
         FField::new_value("-1")
     }

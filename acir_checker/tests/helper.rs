@@ -3,10 +3,7 @@
 use std::path::Path;
 
 use acir_checker::{
-    BackendType, 
-    Error, 
-    VerifyResult, 
-    check_program
+    BackendType, Error, RangeOpts, VerifyResult, check_program
 };
 
 use noirc_driver::{
@@ -99,7 +96,7 @@ pub(crate) fn compile_and_check(
     for program in comp_programs {
         let circuit = program.program.functions.first().unwrap();
         let brillig_names = program.program.unconstrained_functions.iter().map(|f| f.function_name.clone()).collect();
-        result.push(check_program(circuit, brillig_names, backend, strict)?);
+        result.push(check_program(circuit, brillig_names, backend, strict, RangeOpts::default())?);
     }
     Ok(result)
 }

@@ -103,7 +103,6 @@ enum LockType {
     None,
 }
 
-#[cfg(not(feature = "codegen-docs"))]
 #[tracing::instrument(level = "trace")]
 pub(crate) fn start_cli() -> eyre::Result<()> {
     let NaveCli { command, config } = NaveCli::parse();

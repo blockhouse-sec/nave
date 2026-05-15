@@ -99,11 +99,32 @@ fn get_output(solver: &mut Solver, solver_output: SolverOutput) -> Output {
     }
 }
 
+#[derive(Clone, Copy, Debug, Default)]
+pub struct RangeOpts{
+    limit: Option<u32>,
+    kind: RangeEncodingKind,
+}
+
+impl RangeOpts {
+    pub fn new(limit: Option<u32>, kind: RangeEncodingKind) -> Self {
+        Self { limit, kind }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Default)]
+pub enum RangeEncodingKind {
+    #[default]
+    BitDecomposition,
+    BaseDecomposition(u32),
+    ExplicitValue,
+}
+
 pub fn check_program(
     circuit: &Circuit<FieldElement>,
     brillig_names: Vec<String>,
     backend: BackendType,
     strict: bool,
+    range_opts: RangeOpts,
 ) -> Result<VerifyResult, Error> {
     let mut solver = create_solver(backend);
     let mut brillig_funcs: HashMap<u32, String> = HashMap::new();
@@ -114,7 +135,7 @@ pub fn check_program(
         let use_int = use_int(backend);
         let next_witness_index = num_vars(circuit);
         let mut translator =
-            Translator::new(&mut solver, brillig_funcs, next_witness_index, use_int, strict);
+            Translator::new(&mut solver, brillig_funcs, next_witness_index, use_int, strict, range_opts);
         translator.translate_to_smt(circuit)?;
         (translator.ver_conds(), translator.print_locs())
     };
@@ -149,7 +170,7 @@ pub fn check_execution(
     let use_int = use_int(backend);
     let next_witness_index = num_vars(circuit);
     let mut translator =
-        Translator::new(&mut solver, brillig_funcs, next_witness_index, use_int, strict);
+        Translator::new(&mut solver, brillig_funcs, next_witness_index, use_int, strict, RangeOpts::default());
     translator.translate_to_smt(circuit)?;
     translator.translate_witness_map(witness_map)?;
 

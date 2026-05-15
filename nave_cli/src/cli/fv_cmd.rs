@@ -1,57 +1,34 @@
 //! Nargo CLI formal-verify command
 //! More details in: tooling/acir_checker
 
-use clap::{
-    Args, 
-    ValueEnum
-};
-use std::io::{
-    self,
-    Write,
+use clap::{Args, ValueEnum};
+use std::{
+    io::{self, Write},
+    str::FromStr,
 };
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 use acir_checker::{
-    BackendType, 
-    Output, 
-    VerifyResult, 
-    check_execution as check_execution_func, 
-    check_program,
+    BackendType, Output, RangeEncodingKind, RangeOpts, VerifyResult,
+    check_execution as check_execution_func, check_program,
 };
 use acvm::acir::circuit::AcirOpcodeLocation;
 use nargo::{
-    insert_all_files_for_workspace_into_file_manager, 
-    package::Package, 
-    parse_all, 
-    prepare_package, 
+    insert_all_files_for_workspace_into_file_manager, package::Package, parse_all, prepare_package,
     workspace::Workspace,
 };
 use nargo_toml::PackageSelection;
-use noir_artifact_cli::{
-    Artifact,
-    fs::inputs::read_inputs_from_file,
-};
-use noirc_driver::{
-    CompileOptions, 
-    check_crate, 
-    compile_no_check,
-};
+use noir_artifact_cli::{Artifact, fs::inputs::read_inputs_from_file};
+use noirc_driver::{CompileOptions, check_crate, compile_no_check};
 
 use noirc_artifacts::program::CompiledProgram;
 
-use noirc_errors::{
-    Location, 
-    Span,
-};
+use noirc_errors::{Location, Span};
 use noirc_frontend::node_interner::FuncId;
 
-use super::{
-    LockType, 
-    PackageOptions, 
-    WorkspaceCommand
-};
-use nargo_cli::cli::compile_cmd::compile_workspace_full;
+use super::{LockType, PackageOptions, WorkspaceCommand};
 use crate::errors::CliError;
+use nargo_cli::cli::compile_cmd::compile_workspace_full;
 
 /// Formally verify the functions of a compiled program using an SMT solver.
 #[derive(Debug, Clone, Args)]
@@ -71,6 +48,12 @@ pub(crate) struct FormalVerifyCommand {
 struct FormalVerifyOptions {
     #[clap(long, value_enum, default_value = "ff-gb")]
     pub backend: BackendOption,
+
+    #[clap(long, default_value = "bit")]
+    pub range_kind: RangeEncodingOptions,
+
+    #[clap(long)]
+    pub range_limit: Option<u32>,
 
     #[clap(long, default_value = "false")]
     pub relaxed: bool,
@@ -110,6 +93,31 @@ impl ValueEnum for BackendOption {
         }
     }
 }
+#[derive(Clone, Copy, Debug, Default)]
+struct RangeEncodingOptions(RangeEncodingKind);
+
+impl FromStr for RangeEncodingOptions {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "bit" => Ok(RangeEncodingOptions(RangeEncodingKind::BitDecomposition)),
+            "value" => Ok(RangeEncodingOptions(RangeEncodingKind::ExplicitValue)),
+            _ => {
+                if s.starts_with("base:") {
+                    let value = s
+                        .strip_prefix("base:")
+                        .unwrap()
+                        .parse::<u32>()
+                        .map_err(|err| err.to_string())?;
+                    Ok(RangeEncodingOptions(RangeEncodingKind::BaseDecomposition(value)))
+                } else {
+                    Err(format!("Invalid format. Use 'simple' or 'data:<u32>'").into())
+                }
+            }
+        }
+    }
+}
 
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 enum Verbosity {
@@ -121,11 +129,7 @@ enum Verbosity {
 
 impl ValueEnum for Verbosity {
     fn value_variants<'a>() -> &'a [Self] {
-        &[
-            Verbosity::Quiet,
-            Verbosity::Info,
-            Verbosity::Debug,
-        ]
+        &[Verbosity::Quiet, Verbosity::Info, Verbosity::Debug]
     }
 
     fn to_possible_value(&self) -> Option<clap::builder::PossibleValue> {
@@ -148,20 +152,16 @@ impl WorkspaceCommand for FormalVerifyCommand {
     }
 }
 
-pub(crate) fn run(
-    args: FormalVerifyCommand,
-    workspace: Workspace
-) -> Result<(), CliError> {
+pub(crate) fn run(args: FormalVerifyCommand, workspace: Workspace) -> Result<(), CliError> {
     // Compile the full workspace in order to generate any build artifacts.
     let debug_compile_stdin = None;
-    compile_workspace_full(&workspace, &args.compile_options, debug_compile_stdin).map_err(|e| {
-        CliError::Generic(format!("Failed to compile workspace: {}", e))
-    })?;
+    compile_workspace_full(&workspace, &args.compile_options, debug_compile_stdin)
+        .map_err(|e| CliError::Generic(format!("Failed to compile workspace: {}", e)))?;
 
     let backend = args.formal_verify_options.backend.0;
     let strict = !args.formal_verify_options.relaxed;
     let check_execution = args.formal_verify_options.check_execution;
-    
+
     // Go over binary packages that have been created to verify their functions.
     let binary_packages = workspace.into_iter().filter(|package| package.is_binary());
     for package in binary_packages {
@@ -177,29 +177,22 @@ pub(crate) fn run(
 
         if check_execution {
             let prover_path = package.root_dir.join("Prover.toml");
-            let (input_map, opt_output) = read_inputs_from_file(&prover_path, &compiled_program.abi)?;
+            let (input_map, opt_output) =
+                read_inputs_from_file(&prover_path, &compiled_program.abi)?;
             let witness_map = compiled_program.abi.encode(&input_map, opt_output)?;
             let circuit = compiled_program.program.functions.first().unwrap();
-            let output = check_execution_func(
-                witness_map,
-                circuit,
-                backend,
-                strict,
-                &vec![]
-            ).map_err(|e| {
-                CliError::Generic(format!(
-                    "Failed to check execution for package {}: {}",
-                    package.name, e
-                ))
-            })?;
-            display_exec_result(
-                &package.name.to_string(),
-                &output, 
-            ).map_err(|e| {
+            let output = check_execution_func(witness_map, circuit, backend, strict, &vec![])
+                .map_err(|e| {
+                    CliError::Generic(format!(
+                        "Failed to check execution for package {}: {}",
+                        package.name, e
+                    ))
+                })?;
+            display_exec_result(&package.name.to_string(), &output).map_err(|e| {
                 CliError::Generic(format!(
                     "Failed to display execution results {}: {}",
-                    package.name, e)
-                )
+                    package.name, e
+                ))
             })?;
             return Ok(());
         }
@@ -226,7 +219,7 @@ pub(crate) fn run(
     // TODO: Consider using full workspace compilation, and the same file manager
     // it uses instead of initializing those again in the following section.
     // Refactoring might be required after that.
-    
+
     let mut file_manager = workspace.new_file_manager();
     insert_all_files_for_workspace_into_file_manager(&workspace, &mut file_manager);
     let parsed_files = parse_all(&file_manager);
@@ -234,33 +227,25 @@ pub(crate) fn run(
     let options = &args.compile_options;
     for package in workspace.into_iter() {
         let (mut context, crate_id) = prepare_package(&file_manager, &parsed_files, package);
-        check_crate(&mut context, crate_id, &options).map_err(|e|   
-            CliError::Generic(format!(
-            "Failed to check crate for {:?}: {:?}",
-            crate_id, e
-        )))?;
+        check_crate(&mut context, crate_id, &options).map_err(|e| {
+            CliError::Generic(format!("Failed to check crate for {:?}: {:?}", crate_id, e))
+        })?;
 
-        let formal_functions: Vec<(String, FuncId)> = context
-            .get_all_formal_functions_in_crate(&crate_id)
-            .into_iter()
-            .collect();
+        let formal_functions: Vec<(String, FuncId)> =
+            context.get_all_formal_functions_in_crate(&crate_id).into_iter().collect();
 
         let opt_main_func_id = context.get_main_function(&crate_id);
         for (func_name, func_id) in formal_functions {
             if Some(func_id) == opt_main_func_id {
-                continue
+                continue;
             }
-            let program = compile_no_check(
-                &mut context,
-                &options, 
-                func_id, 
-                None, 
-                false
-            ).map_err(|e|   
-                CliError::Generic(format!(
-                "Failed to compile function {:?}: {:?}",
-                func_name, e
-            )))?;
+            let program =
+                compile_no_check(&mut context, &options, func_id, None, false).map_err(|e| {
+                    CliError::Generic(format!(
+                        "Failed to compile function {:?}: {:?}",
+                        func_name, e
+                    ))
+                })?;
             run_formal_harness(&args, package, &program, &func_name)?;
         }
     }
@@ -278,34 +263,45 @@ fn run_formal_harness(
     let backend = args.formal_verify_options.backend.0;
     let strict = !args.formal_verify_options.relaxed;
     let verbose_level = args.formal_verify_options.verbose;
+    let range_opts = RangeOpts::new(
+        args.formal_verify_options.range_limit,
+        args.formal_verify_options.range_kind.0,
+    );
 
     let circuit = compiled_program.program.functions.first().unwrap();
-    let brillig_names = compiled_program.program.unconstrained_functions.iter().map(|f| f.function_name.clone()).collect();
-    let output = check_program(circuit, brillig_names, backend, strict).map_err(|e| {
-        CliError::Generic(format!(
-            "Failed to check program for package {}: {}",
-            package.name, e
-        ))
-    })?;
+    let brillig_names = compiled_program
+        .program
+        .unconstrained_functions
+        .iter()
+        .map(|f| f.function_name.clone())
+        .collect();
+    let output =
+        check_program(circuit, brillig_names, backend, strict, range_opts).map_err(|e| {
+            CliError::Generic(format!(
+                "Failed to check program for package {}: {}",
+                package.name, e
+            ))
+        })?;
 
     if !compiled_program.debug.is_empty() {
         display_verify_result(
-            &compiled_program, 
-            &package.name.to_string(), 
+            &compiled_program,
+            &package.name.to_string(),
             func_name,
             &output,
-            verbose_level
-        ).map_err(|e| {
+            verbose_level,
+        )
+        .map_err(|e| {
             CliError::Generic(format!(
                 "Failed to display verification results {}: {}",
-                package.name, e)
-            )
+                package.name, e
+            ))
         })?;
     }
     Ok(())
 }
 
-// Get source program given a particular `Location` from debug information, and ACIR 
+// Get source program given a particular `Location` from debug information, and ACIR
 // compiled program
 fn source_program_from(location: Location, program: &CompiledProgram) -> Option<String> {
     let file_id = location.file;
@@ -321,7 +317,7 @@ fn get_source_cond_from(location: Location, program: &CompiledProgram) -> Option
     extract_expr(line, column, &source)
 }
 
-// Extract verification condition from the source program given line number and 
+// Extract verification condition from the source program given line number and
 // column number of the condition in the source program
 fn extract_expr(line_num: u32, col: u32, source: &str) -> Option<String> {
     let verify_cond_line = source
@@ -362,10 +358,7 @@ fn line_and_column_from(span: &Span, source: &str) -> (u32, u32) {
 }
 
 // Pretty print result of executing program with given inputs, and expected outputs (if any).
-fn display_exec_result(
-    package_name: &str,
-    output: &Output,
-) -> Result<(), io::Error> {
+fn display_exec_result(package_name: &str, output: &Output) -> Result<(), io::Error> {
     let writer = StandardStream::stderr(ColorChoice::Always);
     let mut writer = writer.lock();
 
