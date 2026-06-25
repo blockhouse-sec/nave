@@ -1,0 +1,6 @@
+[package]
+name = "shift_opr"
+type = "bin"
+authors = [""]
+
+[dependencies]

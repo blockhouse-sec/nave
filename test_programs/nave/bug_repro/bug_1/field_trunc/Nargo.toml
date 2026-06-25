@@ -1,0 +1,6 @@
+[package]
+name = "field_trunc"
+type = "bin"
+authors = [""]
+
+[dependencies]

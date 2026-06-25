@@ -3,7 +3,7 @@
 use anyhow::Error;
 use std::{
     collections::HashMap, 
-    fmt::Display
+    fmt::Display,
 };
 use rsmt2::print::{
     Expr2Smt, 
@@ -294,6 +294,12 @@ impl Solver {
             conf.option(option);
         }
         let rsmt = rsmt2::Solver::new(conf, ()).unwrap();
+
+        // Uncomment the following two lines, and make `rsmt` mutable to 
+        // write the SMT queries to a file for debugging
+        // let file = std::fs::File::create("out.smt2").unwrap();
+        // rsmt.tee(file).unwrap();
+
         Self { rsmt, prime }
     }
 

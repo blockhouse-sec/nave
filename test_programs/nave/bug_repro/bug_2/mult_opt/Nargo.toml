@@ -1,0 +1,6 @@
+[package]
+name = "mult_opt"
+type = "bin"
+authors = [""]
+
+[dependencies]

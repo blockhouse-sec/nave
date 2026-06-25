@@ -422,135 +422,138 @@ fn display_verify_result(
     writer.flush()?;
 
     let solver_output = fv_result.solver_output();
-
-    if verbose_level == Verbosity::Quiet {
-        let is_verified = solver_output.iter().all(|(output, _)| output.is_verified());
-        if is_verified {
-            writer.set_color(ColorSpec::new().set_fg(Some(Color::Green)))?;
-            writeln!(writer, "All assertions verified")?;
-            writer.reset()?;
-            write!(writer, "\n[")?;
-            writer.set_color(ColorSpec::new().set_fg(Some(Color::Blue)))?;
-            write!(writer, "{}", package_name)?;
-            writer.reset()?;
-            writeln!(writer, "]")?;
-            writer.flush()?;
-
-            return Ok(())
-        }
-    }
-
-    let acir_locations = &compiled_program.debug[0].acir_locations;
-    let location_tree = &compiled_program.debug[0].location_tree;
-
-    for (output, call_loc) in solver_output {
-        // Placeholder value for the verification condition
-        let mut condition = "<-->".to_string();
-
-        // Tries to get source program location (and then verification condition)
-        // using opcode location of the brillig call (`call_loc`) in the circuit 
-        match acir_locations.get(&AcirOpcodeLocation::new(*call_loc)) {
-            Some(call_stack_id) => {
-                let locations = location_tree.get_call_stack(*call_stack_id);
-                if !locations.is_empty() {
-                    if let Some(c) = get_source_cond_from(locations[0], &compiled_program) {
-                        condition = c;
-                    }
-                }
-            },
-            None => {}
-        };
-
+    if solver_output.is_empty() {
+        writeln!(writer, "No assertions to verify")?;
+    } else {
         if verbose_level == Verbosity::Quiet {
-            if output.is_falsified() {
-                write!(writer, "\nAssert ")?;
-                writer.set_color(ColorSpec::new().set_fg(Some(Color::Blue)))?;
-                write!(writer, "\"{}\" : ", condition)?;
-                writer.set_color(ColorSpec::new().set_fg(Some(Color::Red)))?;
-                writeln!(writer, "Falsified")?;
+            let is_verified = solver_output.iter().all(|(output, _)| output.is_verified());
+            if is_verified {
+                writer.set_color(ColorSpec::new().set_fg(Some(Color::Green)))?;
+                writeln!(writer, "All assertions verified")?;
                 writer.reset()?;
+                write!(writer, "\n[")?;
+                writer.set_color(ColorSpec::new().set_fg(Some(Color::Blue)))?;
+                write!(writer, "{}", package_name)?;
+                writer.reset()?;
+                writeln!(writer, "]")?;
+                writer.flush()?;
+
+                return Ok(())
             }
-        } else {
-            write!(writer, "\nAssert ")?;
-            writer.set_color(ColorSpec::new().set_fg(Some(Color::Blue)))?;
-            write!(writer, "\"{}\" : ", condition)?;
-            
-            match output {
-                Output::Falsified(model) => {
+        }
+
+        let acir_locations = &compiled_program.debug[0].acir_locations;
+        let location_tree = &compiled_program.debug[0].location_tree;
+
+        for (output, call_loc) in solver_output {
+            // Placeholder value for the verification condition
+            let mut condition = "<-->".to_string();
+
+            // Tries to get source program location (and then verification condition)
+            // using opcode location of the brillig call (`call_loc`) in the circuit 
+            match acir_locations.get(&AcirOpcodeLocation::new(*call_loc)) {
+                Some(call_stack_id) => {
+                    let locations = location_tree.get_call_stack(*call_stack_id);
+                    if !locations.is_empty() {
+                        if let Some(c) = get_source_cond_from(locations[0], &compiled_program) {
+                            condition = c;
+                        }
+                    }
+                },
+                None => {}
+            };
+
+            if verbose_level == Verbosity::Quiet {
+                if output.is_falsified() {
+                    write!(writer, "\nAssert ")?;
+                    writer.set_color(ColorSpec::new().set_fg(Some(Color::Blue)))?;
+                    write!(writer, "\"{}\" : ", condition)?;
                     writer.set_color(ColorSpec::new().set_fg(Some(Color::Red)))?;
                     writeln!(writer, "Falsified")?;
                     writer.reset()?;
+                }
+            } else {
+                write!(writer, "\nAssert ")?;
+                writer.set_color(ColorSpec::new().set_fg(Some(Color::Blue)))?;
+                write!(writer, "\"{}\" : ", condition)?;
+                
+                match output {
+                    Output::Falsified(model) => {
+                        writer.set_color(ColorSpec::new().set_fg(Some(Color::Red)))?;
+                        writeln!(writer, "Falsified")?;
+                        writer.reset()?;
 
-                    if Verbosity::Debug == verbose_level {
-                        writeln!(writer, "\nModel---\n[\"{:?}\"]", model)?;
-                    }
-                    
-                    // Print input parameters and values (if any)
-                    let param_names = compiled_program.abi.parameter_names();
+                        if Verbosity::Debug == verbose_level {
+                            writeln!(writer, "\nModel---\n[\"{:?}\"]", model)?;
+                        }
+                        
+                        // Print input parameters and values (if any)
+                        let param_names = compiled_program.abi.parameter_names();
 
-                    if !param_names.is_empty() {
-                        let witness_ids_iter = compiled_program.program.functions[0].private_parameters.iter();
-                        writeln!(writer, "\nFunction parameters (name: value) ---")?;
-                        for (name, id) in param_names.iter().zip(witness_ids_iter) {
-                            let id_str = id.to_string();
-                            if let Some(val) = model.get(&id_str) {
-                                writeln!(writer, "{name}: {val}")?;
+                        if !param_names.is_empty() {
+                            let witness_ids_iter = compiled_program.program.functions[0].private_parameters.iter();
+                            writeln!(writer, "\nFunction parameters (name: value) ---")?;
+                            for (name, id) in param_names.iter().zip(witness_ids_iter) {
+                                let id_str = id.to_string();
+                                if let Some(val) = model.get(&id_str) {
+                                    writeln!(writer, "{name}: {val}")?;
+                                }
                             }
                         }
-                    }
-                    
-                    // Print return values (if any)
-                    // functions[0] in the following correspond to the main function which must be present
-                    // in the main source file
-                    let return_vals = &compiled_program.program.functions[0].return_values.0;
+                        
+                        // Print return values (if any)
+                        // functions[0] in the following correspond to the main function which must be present
+                        // in the main source file
+                        let return_vals = &compiled_program.program.functions[0].return_values.0;
 
-                    if !return_vals.is_empty() {
-                        writeln!(writer, "\nReturn value(s) ---")?;
-                        for id in return_vals {
-                            let id_str = id.to_string();
-                            if let Some(val) = model.get(&id_str) {
-                                writeln!(writer, "{val}")?;
+                        if !return_vals.is_empty() {
+                            writeln!(writer, "\nReturn value(s) ---")?;
+                            for id in return_vals {
+                                let id_str = id.to_string();
+                                if let Some(val) = model.get(&id_str) {
+                                    writeln!(writer, "{val}")?;
+                                }
                             }
                         }
-                    }
 
-                    let verify_print_locs = fv_result.print_locs();
-                    if !verify_print_locs.is_empty() {
-                        writeln!(writer, "\nverify_print variables (name: value)---")?;
-                        for (witness_id, print_loc) in verify_print_locs {
-                            // Tries to get source program location (and then print verification statement 
-                            // variable name and value) using debug information
-                            match acir_locations.get(&AcirOpcodeLocation::new(*print_loc)) {
-                                Some(call_stack_id) => {
-                                    let locations = location_tree.get_call_stack(*call_stack_id);
-                                    if !locations.is_empty() {
-                                        if let Some(source) = source_program_from(locations[0], compiled_program) {
-                                            let (line, col) = line_and_column_from(&locations[0].span, &source);
-                                            let var_name = extract_expr(line, col, &source).unwrap_or_else(|| "<-->".to_string());
-                                            let id_str = format!("w{}", witness_id);
-                                            if let Some(val) = model.get(&id_str) {
-                                                writeln!(writer, "\nAt line {}: ", line)?;
-                                                writeln!(writer, "{var_name}: {val}")?;
+                        let verify_print_locs = fv_result.print_locs();
+                        if !verify_print_locs.is_empty() {
+                            writeln!(writer, "\nverify_print variables (name: value)---")?;
+                            for (witness_id, print_loc) in verify_print_locs {
+                                // Tries to get source program location (and then print verification statement 
+                                // variable name and value) using debug information
+                                match acir_locations.get(&AcirOpcodeLocation::new(*print_loc)) {
+                                    Some(call_stack_id) => {
+                                        let locations = location_tree.get_call_stack(*call_stack_id);
+                                        if !locations.is_empty() {
+                                            if let Some(source) = source_program_from(locations[0], compiled_program) {
+                                                let (line, col) = line_and_column_from(&locations[0].span, &source);
+                                                let var_name = extract_expr(line, col, &source).unwrap_or_else(|| "<-->".to_string());
+                                                let id_str = format!("w{}", witness_id);
+                                                if let Some(val) = model.get(&id_str) {
+                                                    writeln!(writer, "\nAt line {}: ", line)?;
+                                                    writeln!(writer, "{var_name}: {val}")?;
 
+                                                }
                                             }
                                         }
-                                    }
-                                },
-                                None => {}
-                            };
+                                    },
+                                    None => {}
+                                };
+                            }
                         }
                     }
+                    Output::Verified => {
+                        writer.set_color(ColorSpec::new().set_fg(Some(Color::Green)))?;
+                        writeln!(writer, "Verified")?;
+                    }
+                    Output::Unknown => {
+                        writer.set_color(ColorSpec::new().set_fg(Some(Color::Yellow)))?;
+                        writeln!(writer, "Unknown")?;
+                    }
                 }
-                Output::Verified => {
-                    writer.set_color(ColorSpec::new().set_fg(Some(Color::Green)))?;
-                    writeln!(writer, "Verified")?;
-                }
-                Output::Unknown => {
-                    writer.set_color(ColorSpec::new().set_fg(Some(Color::Yellow)))?;
-                    writeln!(writer, "Unknown")?;
-                }
+                writer.reset()?;
             }
-            writer.reset()?;
         }
     }
 
