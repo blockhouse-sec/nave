@@ -6,4 +6,4 @@ fn main(mut x: u32, y: u32, z: u32) {
     x *= 8;
     unsafe { verify_assert(x > 9); }
 }
-unconstrained fn verify_assert(b: bool) { assert(false); }
+unconstrained fn verify_assert(b: bool) { assert(b); }

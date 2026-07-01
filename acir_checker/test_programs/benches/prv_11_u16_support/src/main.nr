@@ -25,4 +25,4 @@ fn test_u16(x: u16) {
     unsafe { verify_assert(shift >> 15 == 0); }
     unsafe { verify_assert(shift << 15 == 0); }
 }
-unconstrained fn verify_assert(b: bool) { assert(false); }
+unconstrained fn verify_assert(b: bool) { assert(b); }

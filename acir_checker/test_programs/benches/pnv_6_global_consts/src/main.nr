@@ -117,4 +117,4 @@ impl Bar {
 
 // Regression for #1440
 global foo: Foo = Foo { a: Bar::get_a() };
-unconstrained fn verify_assert(b: bool) { assert(false); }
+unconstrained fn verify_assert(b: bool) { assert(b); }

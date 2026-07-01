@@ -1,4 +1,4 @@
-fn main(bn254_modulus_be_bytes: [u8; 32], bn254_modulus_be_bits: [u1; 254]) {
+fn main(bn254_modulus_be_bytes: [u8; 32], bn254_modulus_be_bits: [bool; 254]) {
     let modulus_size = std::field::modulus_num_bits();
     // NOTE: The constraints used in this circuit will only work when testing nargo with the plonk bn254 backend
     unsafe { verify_assert(modulus_size == 254); }
@@ -32,4 +32,4 @@ fn assert_reverse(forwards: [u8], backwards: [u8]) {
         unsafe { verify_assert(forwards[i] == backwards[31 - i]); };
     }
 }
-unconstrained fn verify_assert(b: bool) { assert(false); }
+unconstrained fn verify_assert(b: bool) { assert(b); }

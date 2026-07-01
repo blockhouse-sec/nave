@@ -8,4 +8,4 @@ fn main(value: Field, index: u32) {
 }
 
 pub unconstrained fn store(_: [Field]) {}
-unconstrained fn verify_assert(b: bool) { assert(false); }
+unconstrained fn verify_assert(b: bool) { assert(b); }

@@ -163,7 +163,6 @@ pub(crate) fn run(args: FormalVerifyCommand, workspace: Workspace) -> Result<(),
     let debug_compile_stdin = None;
     compile_workspace_full(&workspace, &args.compile_options, debug_compile_stdin)
         .map_err(|e| CliError::Generic(format!("Failed to compile workspace: {}", e)))?;
-
     let backend = args.formal_verify_options.backend.0;
     let strict = !args.formal_verify_options.relaxed;
     let check_execution = args.formal_verify_options.check_execution;
@@ -380,14 +379,14 @@ fn display_exec_result(package_name: &str, output: &Output) -> Result<(), io::Er
 
     write!(writer, "{}", package_name)?;
     writer.reset()?;
-    write!(writer, "] Execution check for package")?;
+    write!(writer, "] Execution check: ")?;
     writer.reset()?;
     writer.flush()?;
 
     match output {
         Output::Falsified(_) => {
             writer.set_color(ColorSpec::new().set_fg(Some(Color::Green)))?;
-            writeln!(writer, "Checked")?;
+            writeln!(writer, "Passed")?;
         }
         Output::Verified => {
             writer.set_color(ColorSpec::new().set_fg(Some(Color::Red)))?;
@@ -459,7 +458,8 @@ fn display_verify_result(
             // using opcode location of the brillig call (`call_loc`) in the circuit 
             match acir_locations.get(&AcirOpcodeLocation::new(*call_loc)) {
                 Some(call_stack_id) => {
-                    let locations = location_tree.get_call_stack(*call_stack_id);
+                    let call_stack = location_tree.get_call_stack(*call_stack_id);
+                    let locations = call_stack.as_ref();
                     if !locations.is_empty() {
                         if let Some(c) = get_source_cond_from(locations[0], &compiled_program) {
                             condition = c;
@@ -530,7 +530,8 @@ fn display_verify_result(
                                 // variable name and value) using debug information
                                 match acir_locations.get(&AcirOpcodeLocation::new(*print_loc)) {
                                     Some(call_stack_id) => {
-                                        let locations = location_tree.get_call_stack(*call_stack_id);
+                                        let call_stack = location_tree.get_call_stack(*call_stack_id);
+                                        let locations = call_stack.as_ref();
                                         if !locations.is_empty() {
                                             if let Some(source) = source_program_from(locations[0], compiled_program) {
                                                 let (line, col) = line_and_column_from(&locations[0].span, &source);
@@ -539,7 +540,6 @@ fn display_verify_result(
                                                 if let Some(val) = model.get(&id_str) {
                                                     writeln!(writer, "\nAt line {}: ", line)?;
                                                     writeln!(writer, "{var_name}: {val}")?;
-
                                                 }
                                             }
                                         }

@@ -14,4 +14,4 @@ fn foo() -> str<3> {
 fn bar() -> str<3> {
     "bar"
 }
-unconstrained fn verify_assert(b: bool) { assert(false); }
+unconstrained fn verify_assert(b: bool) { assert(b); }

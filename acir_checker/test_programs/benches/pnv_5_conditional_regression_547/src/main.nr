@@ -18,4 +18,4 @@ fn safe_inverse(n: Field) -> Field {
         1 / n
     }
 }
-unconstrained fn verify_assert(b: bool) { assert(false); }
+unconstrained fn verify_assert(b: bool) { assert(b); }

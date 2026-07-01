@@ -5,4 +5,4 @@ fn main(x: Field) -> pub Field {
     unsafe { verify_assert(res != 1); }
     res
 }
-unconstrained fn verify_assert(b: bool) { assert(false); }
+unconstrained fn verify_assert(b: bool) { assert(b); }

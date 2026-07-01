@@ -25,4 +25,4 @@ fn regression_4967() {
     unsafe { verify_assert(var1.len() == 1); }
     std::println(var1);
 }
-unconstrained fn verify_assert(b: bool) { assert(false); }
+unconstrained fn verify_assert(b: bool) { assert(b); }

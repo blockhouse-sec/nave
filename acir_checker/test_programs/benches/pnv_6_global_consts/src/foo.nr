@@ -8,4 +8,4 @@ pub fn from_foo(x: [Field; bar::N]) {
         unsafe { verify_assert(x[i] == bar::N as Field); }
     }
 }
-unconstrained fn verify_assert(b: bool) { assert(false); }
+unconstrained fn verify_assert(b: bool) { assert(b); }

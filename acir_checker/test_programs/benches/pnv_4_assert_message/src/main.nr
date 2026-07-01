@@ -16,4 +16,4 @@ fn main(a: Field, b: Field, c: Field) {
     }
 }
 
-unconstrained fn verify_assert(b: bool) { assert(false); }
+unconstrained fn verify_assert(b: bool) { assert(b); }

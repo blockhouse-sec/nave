@@ -8,4 +8,4 @@ fn main() -> pub [[u8; 32]; 2] {
     unsafe { verify_assert(result[0] == 0); }
     result
 }
-unconstrained fn verify_assert(b: bool) { assert(false); }
+unconstrained fn verify_assert(b: bool) { assert(b); }

@@ -7,4 +7,4 @@ fn main(mut x: u32, y: u32, z: u32) {
     x *= x; //429 981 696
     unsafe { verify_assert(x == z); }
 }
-unconstrained fn verify_assert(b: bool) { assert(false); }
+unconstrained fn verify_assert(b: bool) { assert(b); }

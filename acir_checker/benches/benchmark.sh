@@ -5,7 +5,7 @@
 BENCH_TAG=$1
 DIR="$(dirname $(realpath ${BASH_SOURCE[0]}))"
 # Command to benchmark
-CMD="${DIR}/../../../target/debug/nargo formal-verify"
+CMD="${DIR}/../../target/debug/nave formal-verify"
 TIMEOUT_SECS=90
 BENCHES_PATH="${DIR}/../test_programs/benches"
 RESULTS_PATH="${DIR}/${BENCH_TAG}"

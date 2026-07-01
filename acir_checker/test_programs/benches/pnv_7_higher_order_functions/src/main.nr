@@ -92,4 +92,4 @@ fn regression_2154() {
 
     unsafe { verify_assert(closure_if_else() == 32); }
 }
-unconstrained fn verify_assert(b: bool) { assert(false); }
+unconstrained fn verify_assert(b: bool) { assert(b); }

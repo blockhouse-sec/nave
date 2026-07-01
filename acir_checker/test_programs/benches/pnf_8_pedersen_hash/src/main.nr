@@ -4,4 +4,4 @@ fn main(x: Field, y: Field, expected_hash: Field) {
     unsafe { verify_assert(hash == expected_hash); };
 }
 // docs:end:pedersen-hash
-unconstrained fn verify_assert(b: bool) { assert(false); }
+unconstrained fn verify_assert(b: bool) { assert(b); }

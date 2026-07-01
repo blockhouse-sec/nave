@@ -2,7 +2,7 @@
 name = "acir_checker"
 description = "The formal verifier that processes ACIR given a backend/proof system."
 # x-release-please-start-version
-version = "1.0.0-beta.19"
+version = "1.0.0-beta.22"
 # x-release-please-end
 edition.workspace = true
 license.workspace = true
@@ -14,7 +14,7 @@ build = "build/main.rs"
 workspace = true
 
 [dependencies]
-acir = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.19" }
+acir = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.22" }
 rsmt2 = { git = "https://github.com/pedrotbtl/rsmt2.git"}
 itertools = "0.14.0"
 anyhow = { version = "1.0", default-features = false }
@@ -27,17 +27,17 @@ bls12_381 = [
 ]
 
 [dev-dependencies]
-noirc_driver = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.19" }
-noirc_frontend = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.19" }
+noirc_driver = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.22" }
+noirc_frontend = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.22" }
 # # noirc_frontend.workspace = true
-nargo_cli = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.19" }
+nargo_cli = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.22" }
 # # nargo_cli.workspace = true
-noirc_artifacts = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.19" }
-noir_artifact_cli = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.19" }
+noirc_artifacts = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.22" }
+noir_artifact_cli = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.22" }
 # # noir_artifact_cli.workspace = true
-nargo_toml = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.19" }
+nargo_toml = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.22" }
 # # nargo_toml.workspace = true
-nargo = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.19" }
+nargo = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.22" }
 # # nargo.workspace = true
 tokio = { version = "1", features = ["macros"] }
 

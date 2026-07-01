@@ -19,4 +19,4 @@ fn main(x: Field, y: pub Field) {
     foo(y);
     unsafe { verify_assert(x != y); }
 }
-unconstrained fn verify_assert(b: bool) { assert(false); }
+unconstrained fn verify_assert(b: bool) { assert(b); }

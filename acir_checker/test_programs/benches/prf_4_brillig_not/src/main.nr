@@ -12,4 +12,4 @@ fn main(x: Field, y: Field) {
 unconstrained fn not_operator(x: bool) -> bool {
     !x
 }
-unconstrained fn verify_assert(b: bool) { assert(false); }
+unconstrained fn verify_assert(b: bool) { assert(b); }

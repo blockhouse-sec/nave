@@ -16,3 +16,9 @@ impl Display for Error {
         }
     }
 }
+
+impl From<anyhow::Error> for Error {
+    fn from(e: anyhow::Error) -> Self {
+        Error::SmtSolvingError(e.to_string())
+    }
+}

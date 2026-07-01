@@ -10,4 +10,4 @@ fn main(x: u8) {
 unconstrained fn return_true() -> bool {
     true
 }
-unconstrained fn verify_assert(b: bool) { assert(false); }
+unconstrained fn verify_assert(b: bool) { assert(b); }

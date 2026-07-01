@@ -7,4 +7,4 @@ fn main(x: Field, y: Field) {
 
     unsafe { verify_assert(x != import::hello(y)); }
 }
-unconstrained fn verify_assert(b: bool) { assert(false); }
+unconstrained fn verify_assert(b: bool) { assert(b); }

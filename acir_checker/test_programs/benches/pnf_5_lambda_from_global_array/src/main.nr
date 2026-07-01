@@ -12,4 +12,4 @@ fn f1() -> Field {
 fn f2() -> Field {
     2
 }
-unconstrained fn verify_assert(b: bool) { assert(false); }
+unconstrained fn verify_assert(b: bool) { assert(b); }

@@ -9,3 +9,9 @@ not lead to a satisfiable assignment. By testing an execution, we mean that we a
 * `test_falsified.rs`: has a set of Noir programs, created by us, with verification assertions that fail.
 * `test_verified.rs`: has a set of Noir programs, created by us, with verification assertions that fail.
 
+To run these tests run from the repo root:
+
+```
+cargo nextest run
+```
+

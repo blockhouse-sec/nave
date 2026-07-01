@@ -12,4 +12,4 @@ fn regression_3057() {
     (array[0])[1] = 2;
     unsafe { verify_assert(array[0][1] == 2); }
 }
-unconstrained fn verify_assert(b: bool) { assert(false); }
+unconstrained fn verify_assert(b: bool) { assert(b); }

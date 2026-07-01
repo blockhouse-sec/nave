@@ -91,11 +91,11 @@ fn use_int(backend: BackendType) -> bool {
     }
 }
 
-fn get_output(solver: &mut Solver, solver_output: SolverOutput) -> Output {
+fn get_output(solver: &mut Solver, solver_output: SolverOutput) -> Result<Output, Error> {
     match solver_output {
-        SolverOutput::Sat => Output::Falsified(solver.get_model()),
-        SolverOutput::Unsat => Output::Verified,
-        SolverOutput::Unknown => Output::Unknown,
+        SolverOutput::Sat => Ok(Output::Falsified(solver.get_model()?)),
+        SolverOutput::Unsat => Ok(Output::Verified),
+        SolverOutput::Unknown => Ok(Output::Unknown),
     }
 }
 
@@ -138,14 +138,19 @@ pub fn check_program(
         let mut translator =
             Translator::new(&mut solver, brillig_funcs, next_witness_index, use_int, strict, range_opts);
         translator.translate_to_smt(circuit)?;
+        if !translator.has_constraints() {
+            println!("Circuit has no constraints");
+            return Ok(VerifyResult { solver_output: vec![], print_locs: vec![] });
+        }
         (translator.ver_conds(), translator.print_locs())
     };
     let mut outputs = Vec::new();
     for (actlit_name, call_loc) in ver_conds {
         let out_sat = solver.check_sat_assuming(&actlit_name).unwrap();
-        let output = get_output(&mut solver, out_sat);
+        let output = get_output(&mut solver, out_sat)?;
         if let Output::Verified = output {
-            solver.assert(Bool::new_const(&actlit_name).neg());
+            solver.assert(Bool::new_const(&actlit_name).neg())
+                .map_err(|e| Error::SmtSolvingError(e.to_string()))?;
         }
         outputs.push((output, call_loc));
     }
@@ -173,9 +178,12 @@ pub fn check_execution(
     let mut translator =
         Translator::new(&mut solver, brillig_funcs, next_witness_index, use_int, strict, Some(RangeOpts::default()));
     translator.translate_to_smt(circuit)?;
+    if !translator.has_constraints() {
+        println!("Circuit has no constraints");
+    }
     translator.translate_witness_map(witness_map)?;
 
     let out_sat = solver.check_sat().map_err(|e| Error::SmtSolvingError(e.to_string()))?;
-    let output = get_output(&mut solver, out_sat);
+    let output = get_output(&mut solver, out_sat)?;
     Ok(output)
 }

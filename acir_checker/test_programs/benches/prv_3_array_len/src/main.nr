@@ -22,4 +22,4 @@ fn main(x: Field, len3: [u8; 3], len4: [Field; 4]) {
     // on a witness is only evaluated during/after acir-gen.
     unsafe { verify_assert(x.to_le_bytes::<8>().len() != 0); }
 }
-unconstrained fn verify_assert(b: bool) { assert(false); }
+unconstrained fn verify_assert(b: bool) { assert(b); }

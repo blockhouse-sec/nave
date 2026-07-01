@@ -1,4 +1,4 @@
-fn main(x: u1, y: u1) {
+fn main(x: bool, y: bool) {
     unsafe { verify_assert(x | y == 1); }
 
     unsafe { verify_assert(x | y | x == 1); }

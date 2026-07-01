@@ -15,4 +15,4 @@ unconstrained fn conditional(x: bool) -> Field {
         5
     }
 }
-unconstrained fn verify_assert(b: bool) { assert(false); }
+unconstrained fn verify_assert(b: bool) { assert(b); }

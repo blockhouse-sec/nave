@@ -32,4 +32,4 @@ fn check_inner_struct(a: foo::fooStruct, z: foo::bar::barStruct) {
         unsafe { verify_assert(a.bar_struct.array[i] == z.array[i]); }
     }
 }
-unconstrained fn verify_assert(b: bool) { assert(false); }
+unconstrained fn verify_assert(b: bool) { assert(b); }

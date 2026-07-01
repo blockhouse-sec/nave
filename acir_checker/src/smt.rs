@@ -282,6 +282,7 @@ pub enum SolverOutput {
 pub struct Solver {
     rsmt: rsmt2::Solver<()>,
     prime: &'static str,
+    pub assert_count: usize,
 }
 
 impl Solver {
@@ -298,7 +299,7 @@ impl Solver {
             let file = File::create("out.smt2").unwrap();
             rsmt.tee(file).unwrap();
         }
-        Self { rsmt, prime }
+        Self { rsmt, prime, assert_count: 0 }
     }
 
     fn new(prime: &'static str, debug_smtlib_file: bool) -> Self {
@@ -335,8 +336,13 @@ impl Solver {
         Self::new_ff(prime, true, debug_smtlib_file)
     }
 
-    pub fn assert(&mut self, b_expr: Bool) {
-        self.rsmt.assert(b_expr.expr).unwrap();
+    pub fn assert(&mut self, b_expr: Bool) -> Result<(), Error> {
+        self.assert_count += 1;
+        self.rsmt.assert(b_expr.expr).map_err(|e| Error::msg(e.to_string()))
+    }
+
+    pub fn has_constraints(&self) -> bool {
+        self.assert_count > 0
     }
 
     pub fn check_sat_assuming(&mut self, actlits: &String) -> Result<SolverOutput, Error> {
@@ -365,8 +371,8 @@ impl Solver {
         result
     }
     
-    pub fn get_model(&mut self) -> HashMap<String, Value> {
-        let model = self.rsmt.get_model().unwrap();
+    pub fn get_model(&mut self) -> Result<HashMap<String, Value>, Error> {
+        let model = self.rsmt.get_model().map_err(|e| Error::msg(e.to_string()))?;
         let mut res = HashMap::new();
         for (id, _, typ, val) in model {
             let val = if typ == "Int" {
@@ -375,23 +381,26 @@ impl Solver {
                 let b = match val.as_str() {
                     "true" => true,
                     "false" => false,
-                    _ => panic!("Unexpected Bool value in model: {}", val),
+                    _ => return Err(Error::msg(format!("Unexpected Bool value in model: {}", val))),
                 };
                 Value::Bool(b)
             } else if typ.starts_with("(_ FiniteField") {
                 // val is of the form (as ff123 FF)
-                let val = val.split_once("m").unwrap().0.strip_prefix("#f").unwrap();
-                Value::FField(val.to_string())
+                let digits = val
+                    .split_once("m")
+                    .and_then(|(prefix, _)| prefix.strip_prefix("#f"))
+                    .ok_or_else(|| Error::msg(format!("Unexpected FiniteField value format: {}", val)))?;
+                Value::FField(digits.to_string())
             } else {
-                panic!("Unexpected type in model: {}", typ);
+                return Err(Error::msg(format!("Unexpected type in model: {}", typ)));
             };
             res.insert(id, val);
         }
-        res
+        Ok(res)
     }
     
-    pub fn declare_const(&mut self, symbol: &str, typ: Type) {
-        self.rsmt.declare_const(symbol, typ).map_err(|e| Error::msg(e.to_string())).unwrap();
+    pub fn declare_const(&mut self, symbol: &str, typ: Type) -> Result<(), Error> {
+        self.rsmt.declare_const(symbol, typ).map_err(|e| Error::msg(e.to_string()))
     }
 
     pub fn prime(&self) -> &'static str {
@@ -403,13 +412,13 @@ mod tests {
     #[test]
     fn test_solver() {
         let mut solver = super::Solver::new_ff_gb("13", false);
-        solver.declare_const("x", super::Type::FField);
-        solver.declare_const("y", super::Type::FField);
+        let _ = solver.declare_const("x", super::Type::FField);
+        let _ = solver.declare_const("y", super::Type::FField);
         let x = super::FField::new_const("x");
         let y = super::FField::new_const("y");
         let ff_one = super::FField::one();
         let constraint = x.add(y).eq(ff_one);
-        solver.assert(constraint);
+        solver.assert(constraint).unwrap();
         let checksat = solver.check_sat();
         match checksat.unwrap() {
             super::SolverOutput::Sat => {

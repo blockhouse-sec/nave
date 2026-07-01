@@ -41,4 +41,4 @@ fn main(x: u32, y: u32) {
         create_and_assert_inside_brillig(x, y);
     }
 }
-unconstrained fn verify_assert(b: bool) { assert(false); }
+unconstrained fn verify_assert(b: bool) { assert(b); }

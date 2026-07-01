@@ -14,4 +14,4 @@ fn main(x: Field, active: bool) {
 unconstrained fn foo(_x: Field) -> bool {
     true
 }
-unconstrained fn verify_assert(b: bool) { assert(false); }
+unconstrained fn verify_assert(b: bool) { assert(b); }

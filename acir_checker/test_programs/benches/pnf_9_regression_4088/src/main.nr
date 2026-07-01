@@ -28,4 +28,4 @@ where
 fn main(mut note: ValueNote) {
     oopsie(note);
 }
-unconstrained fn verify_assert(b: bool) { assert(false); }
+unconstrained fn verify_assert(b: bool) { assert(b); }

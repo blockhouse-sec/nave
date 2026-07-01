@@ -24,4 +24,4 @@ fn main(values: [Field; 6]) {
     let notes = unsafe { create_inside_brillig(values) };
     unsafe { verify_assert(access_nested(notes) == (2 + 4 + 3 + 1)); }
 }
-unconstrained fn verify_assert(b: bool) { assert(false); }
+unconstrained fn verify_assert(b: bool) { assert(b); }

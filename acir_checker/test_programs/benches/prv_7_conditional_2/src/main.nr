@@ -48,4 +48,4 @@ fn foo2() -> Field {
     3
 }
 
-unconstrained fn verify_assert(b: bool) { assert(false); }
+unconstrained fn verify_assert(b: bool) { assert(b); }

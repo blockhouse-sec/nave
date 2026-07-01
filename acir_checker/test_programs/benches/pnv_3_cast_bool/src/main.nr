@@ -5,4 +5,4 @@ fn main(x: Field, y: Field) {
     unsafe { verify_assert(t == 1); }
 }
 
-unconstrained fn verify_assert(b: bool) { assert(false); }
+unconstrained fn verify_assert(b: bool) { assert(b); }
