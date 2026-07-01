@@ -22,24 +22,24 @@ build-data = "^0.3.3"
 
 [dependencies]
 clap = { version = "4.3.19", features = ["derive", "env"] }
-fm = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.22" }
-nargo = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.22" , features = ["rpc"] }
-nargo_cli = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.22" }
+fm = { git = "https://github.com/blockhouse-sec/noir.git", tag = "nave-v1.0.0-beta.22" }
+nargo = { git = "https://github.com/blockhouse-sec/noir.git", tag = "nave-v1.0.0-beta.22" , features = ["rpc"] }
+nargo_cli = { git = "https://github.com/blockhouse-sec/noir.git", tag = "nave-v1.0.0-beta.22" }
 # nargo_expand.workspace = true
 # nargo_fmt.workspace = true
-nargo_toml = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.22" }
+nargo_toml = { git = "https://github.com/blockhouse-sec/noir.git", tag = "nave-v1.0.0-beta.22" }
 # noir_lsp.workspace = true
-noir_artifact_cli = {git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.22"  }
-# noir_debugger = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.22"  }
+noir_artifact_cli = {git = "https://github.com/blockhouse-sec/noir.git", tag = "nave-v1.0.0-beta.22"  }
+# noir_debugger = { git = "https://github.com/blockhouse-sec/noir.git", tag = "nave-v1.0.0-beta.22"  }
 # noirc_evaluator.workspace = true
-noirc_driver = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.22" , features = ["bn254"] }
-noirc_frontend = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.22" , features = ["bn254"] }
-noirc_abi = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.22" }
-noirc_errors = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.22" }
-noirc_artifacts = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.22" }
-# noirc_artifacts_info = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.22" }
+noirc_driver = { git = "https://github.com/blockhouse-sec/noir.git", tag = "nave-v1.0.0-beta.22" , features = ["bn254"] }
+noirc_frontend = { git = "https://github.com/blockhouse-sec/noir.git", tag = "nave-v1.0.0-beta.22" , features = ["bn254"] }
+noirc_abi = { git = "https://github.com/blockhouse-sec/noir.git", tag = "nave-v1.0.0-beta.22" }
+noirc_errors = { git = "https://github.com/blockhouse-sec/noir.git", tag = "nave-v1.0.0-beta.22" }
+noirc_artifacts = { git = "https://github.com/blockhouse-sec/noir.git", tag = "nave-v1.0.0-beta.22" }
+# noirc_artifacts_info = { git = "https://github.com/blockhouse-sec/noir.git", tag = "nave-v1.0.0-beta.22" }
 # noir_ast_fuzzer.workspace = true
-acvm = { git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.22" , features = ["bn254"] }
+acvm = { git = "https://github.com/blockhouse-sec/noir.git", tag = "nave-v1.0.0-beta.22" , features = ["bn254"] }
 acir_checker.workspace = true
 thiserror = "1.0.21"
 const_format = "0.2.36"

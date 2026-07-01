@@ -21,12 +21,12 @@ To reproduce these bugs, update the git tags in the Cargo configuration files fo
 
 Change all occurrences of:
 ```toml
-{ git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave-v1.0.0-beta.19" }
+{ git = "https://github.com/blockhouse-sec/noir.git", tag = "nave-v1.0.0-beta.19" }
 ```
 
 To:
 ```toml
-{ git = "https://github.com/pedrotbtl/noir-pub.git", tag = "nave_test_bug_repro" }
+{ git = "https://github.com/blockhouse-sec/noir.git", tag = "nave_test_bug_repro" }
 ```
 
 ## Running the Bug Reproductions
