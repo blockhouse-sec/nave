@@ -1,69 +1,65 @@
-<div align="center">
-  <picture>
-    <img src="./noir-logo.png" alt="The Noir Programming Language" width="35%">
-  </picture>
+# NAVe — Noir Formal Verifier
 
-[Website][Noir] | [Getting started] | [Documentation] | [Contributing]
-</div>
+NAVe is a formal verifier for [Noir](https://www.noir-lang.org/), a domain-specific language for SNARK proving systems. Not to be confused with a ZK verifier, NAVe checks that Noir programs give rise to the expected constraints.
 
+NAVe translates an ACIR program into a corresponding set of SMT constraints that are verified by the CVC5 SMT solver. It relies on the Noir compiler to compile a Noir program into ACIR.
 
+**This implementation is in early development. It has not been reviewed or audited. It is not suitable for production use. Expect bugs!**
 
-# The Noir Programming Language
+The paper describing NAVe — and giving a formal semantics to (a subset of) ACIR — is at: [https://arxiv.org/abs/2601.09372](https://arxiv.org/abs/2601.09372)
 
-[![Non-deterministic fuzz tests](https://github.com/noir-lang/noir/actions/workflows/nightly-fuzz-test.yml/badge.svg)](https://github.com/noir-lang/noir/actions/workflows/nightly-fuzz-test.yml)
+## How It Works
 
-Noir is a Domain Specific Language for SNARK proving systems. It has been designed to use any ACIR compatible proving system.
+A developer annotates their Noir program with *verification asserts*. Unlike Noir's built-in `assert`, these are not runtime constraints — they are verification conditions checked by the SMT solver.
 
-**This implementation is in early development. It has not been reviewed or audited. It is not suitable to be used in production. Expect bugs!**
+```
+Noir source → Noir compiler → ACIR circuit → NAVe translator → SMT2 → CVC5 → result
+```
 
-## NAVe (Noir Formal Verifier)
-
-NAVe is a formal verifier for the Noir language. Not to be confused with a ZK verifier, NAVe is designed to check that the code gives rise to the expected constraints.
-NAVe translates a ACIR program into a corresponding set of SMT constraints that can be verified by an SMT solver; NAVe relies on the Noir infrastructure to compile a
-Noir program into ACIR.
-
-A developer can annotate its Noir program with *verification asserts*. Unlike Noir builtin asserts, these asserts are not constraining the behaviour of the program,
-they represent, instead, verification conditions that will be checked by the verified.
-
-The main components of NAVe are in [tooling/acir_checker](tooling/acir_checker).
-
-A simple tutorial for NAVe is in [test_programs/nave/tutorial/rps](test_programs/nave/tutorial/rps).
-
-NAVe test programs are in [test_programs/nave](test_programs/nave).
-
-The paper describing NAVe  --- and giving a formal semantics to (a subset of) ACIR --- is at: [https://arxiv.org/abs/2601.09372](https://arxiv.org/abs/2601.09372)
+The main components are in [tooling/acir_checker](tooling/acir_checker).
 
 ## Quick Start
 
-Read the [installation section][Getting started] from the [Noir docs][Documentation].
+**Requirements**: CVC5 with finite field support must be on `PATH`. Download from [cvc5/cvc5 releases](https://github.com/cvc5/cvc5/releases/) (for macOS ARM: `cvc5-macOS-arm64-static-gpl.zip`).
 
-Once you have read through the documentation, you can visit [Awesome Noir](https://github.com/noir-lang/awesome-noir) to run some of the examples that others have created.
+```bash
+# Build
+cargo build --release
 
-## Getting Help
+# Run the verifier on a Noir project
+cargo run -- formal-verify
+cargo run -- formal-verify --backend=ff-split
+cargo run -- formal-verify --backend=int
+cargo run -- formal-verify --relaxed
+cargo run -- formal-verify --check-execution --verbose=normal
+```
 
-Join the Noir [forum][Forum] or [Discord][Discord]
+## Tutorial
 
-## Contributing
+A simple tutorial using a Rock-Paper-Scissors example is in [test_programs/nave/tutorial/rps](test_programs/nave/tutorial/rps).
 
-See [CONTRIBUTING.md][CONTRIBUTING].
+NAVe test programs are in [test_programs/nave](test_programs/nave).
 
-## Future Work
+## Backends
 
-The current focus is to gather as much feedback as possible while in the alpha phase. The main focuses of Noir are _safety_ and _developer experience_. If you find a feature that does not seem to be in line with these goals, please open an issue!
+| Backend | Description |
+|---------|-------------|
+| `ff-gb` | Finite field with Gröbner bases — default, most complete |
+| `ff-split` | Finite field split constraints — faster approximation |
+| `int` | Integer encoding — for testing/approximation |
 
-## Minimum Rust version
+## Verification Outcomes
+
+- **Verified** — SMT query is UNSAT (property holds for all inputs)
+- **Falsified(Model)** — SAT with counterexample
+- **Unknown** — Solver could not determine
+
+## Minimum Rust Version
 
 This workspace's minimum supported rustc version is 1.85.0.
 
 ## License
 
-Noir is free and open source. It is distributed under a dual license. (MIT/APACHE)
+NAVe is free and open source. It is distributed under a dual license (MIT/APACHE).
 
 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in this repository by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
-
-[Noir]: https://www.noir-lang.org/
-[Getting Started]: https://noir-lang.org/docs/getting_started/quick_start/
-[Forum]: https://forum.aztec.network/c/noir
-[Discord]: https://discord.gg/JtqzkdeQ6G
-[Documentation]: https://noir-lang.org/docs/
-[Contributing]: CONTRIBUTING.md
