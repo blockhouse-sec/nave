@@ -1,5 +1,0 @@
-[package]
-name = "trait_associated_constant"
-type = "bin"
-authors = [""]
-[dependencies]

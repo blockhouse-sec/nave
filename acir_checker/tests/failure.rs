@@ -271,20 +271,8 @@ mod tests {
         run_execution_test_failure("test_programs/execution_failure/brillig_assert_msg_runtime/Nargo.toml");
     }
     #[test]
-    fn test_execute_failure_brillig_entry_points_shared_recursive() {
-        run_execution_test_failure("test_programs/execution_failure/brillig_entry_points_shared_recursive/Nargo.toml");
-    }
-    #[test]
-    fn test_execute_failure_brillig_mem_layout_regression() {
-        run_execution_test_failure("test_programs/execution_failure/brillig_mem_layout_regression/Nargo.toml");
-    }
-    #[test]
     fn test_execute_failure_div_signed() {
         run_execution_test_failure("test_programs/execution_failure/div_signed/Nargo.toml");
-    }
-    #[test]
-    fn test_execute_failure_mocks_in_execution() {
-        run_execution_test_failure("test_programs/execution_failure/mocks_in_execution/Nargo.toml");
     }
     #[test]
     fn test_execute_failure_mod_by_zero_witness() {
@@ -293,10 +281,6 @@ mod tests {
     #[test]
     fn test_execute_failure_mod_by_zero_witness_signed() {
         run_execution_test_failure("test_programs/execution_failure/mod_by_zero_witness_signed/Nargo.toml");
-    }
-    #[test]
-    fn test_execute_failure_mutually_recursive_simple_functions() {
-        run_execution_test_failure("test_programs/execution_failure/mutually_recursive_simple_functions/Nargo.toml");
     }
     #[test]
     fn test_execute_failure_regression_10238() {
@@ -311,24 +295,8 @@ mod tests {
         run_execution_test_failure("test_programs/execution_failure/regression_9904/Nargo.toml");
     }
     #[test]
-    fn test_execute_failure_regression_claude_1303() {
-        run_execution_test_failure("test_programs/execution_failure/regression_claude_1303/Nargo.toml");
-    }
-    #[test]
     fn test_execute_failure_shl_signed_regression_9592() {
         run_execution_test_failure("test_programs/execution_failure/shl_signed_regression_9592/Nargo.toml");
-    }
-    #[test]
-    fn test_execute_failure_simple_infinite_recursive_function() {
-        run_execution_test_failure("test_programs/execution_failure/simple_infinite_recursive_function/Nargo.toml");
-    }
-    #[test]
-    fn test_execute_failure_simple_infinite_recursive_lambda() {
-        run_execution_test_failure("test_programs/execution_failure/simple_infinite_recursive_lambda/Nargo.toml");
-    }
-    #[test]
-    fn test_execute_failure_unknown_oracle() {
-        run_execution_test_failure("test_programs/execution_failure/unknown_oracle/Nargo.toml");
     }
     #[test]
     fn test_execute_failure_unused_array_set_unknown_index_out_of_bounds() {

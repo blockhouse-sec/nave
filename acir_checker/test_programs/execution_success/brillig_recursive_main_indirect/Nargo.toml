@@ -1,6 +1,0 @@
-[package]
-name = "brillig_recursive_main_indirect"
-type = "bin"
-authors = [""]
-
-[dependencies]

@@ -1,7 +1,0 @@
-[package]
-name = "lambda_env_is_copied"
-version = "0.1.0"
-type = "bin"
-authors = [""]
-
-[dependencies]

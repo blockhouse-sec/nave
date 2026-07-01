@@ -1,6 +1,0 @@
-[package]
-name = "mutable_and_immutable_reference_alias"
-type = "bin"
-authors = [""]
-
-[dependencies]

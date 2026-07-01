@@ -1,6 +1,0 @@
-[package]
-name = "regression_unused_nested_array_get"
-type = "bin"
-authors = [""]
-
-[dependencies]

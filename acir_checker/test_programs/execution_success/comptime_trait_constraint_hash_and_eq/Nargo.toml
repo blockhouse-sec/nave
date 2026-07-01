@@ -1,6 +1,0 @@
-[package]
-name = "comptime_trait_constraint_hash_and_eq"
-type = "bin"
-authors = [""]
-
-[dependencies]

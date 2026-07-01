@@ -1,6 +1,0 @@
-[package]
-name = "vector_pop_front_aliased_source"
-type = "bin"
-authors = [""]
-
-[dependencies]

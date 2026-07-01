@@ -1,6 +1,0 @@
-[package]
-name = "comptime_println_fmtstr_with_quoted"
-type = "bin"
-authors = [""]
-
-[dependencies]

@@ -1,6 +1,0 @@
-[package]
-name = "signed_bitshift"
-type = "bin"
-authors = [""]
-
-[dependencies]

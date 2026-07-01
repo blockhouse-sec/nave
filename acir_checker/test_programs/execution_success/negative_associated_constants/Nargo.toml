@@ -1,6 +1,0 @@
-[package]
-name = "negative_associated_constants"
-type = "bin"
-authors = [""]
-
-[dependencies]

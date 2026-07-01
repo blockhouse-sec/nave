@@ -1,6 +1,0 @@
-[package]
-name = "brillig_large_nested_array"
-type = "bin"
-authors = [""]
-
-[dependencies]

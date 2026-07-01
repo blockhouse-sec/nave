@@ -1,6 +1,0 @@
-[package]
-name = "simple_infinite_recursive_lambda"
-type = "bin"
-authors = [""]
-
-[dependencies]

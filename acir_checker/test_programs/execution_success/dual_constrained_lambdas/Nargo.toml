@@ -1,6 +1,0 @@
-[package]
-name = "dual_constrained_lambdas"
-type = "bin"
-authors = [""]
-
-[dependencies]
